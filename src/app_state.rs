@@ -1,5 +1,5 @@
 use serde::Deserialize;
-use sp_core::{Pair, crypto::AccountId32, sr25519};
+use sp_core::{crypto::AccountId32, sr25519};
 use std::{
     collections::HashMap,
     sync::{Arc, RwLock},

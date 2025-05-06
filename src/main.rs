@@ -1,10 +1,14 @@
 pub mod app_state;
 pub mod box_secrets;
 pub mod errors;
+pub mod health;
+#[cfg(test)]
+pub mod test_helpers;
 
+use crate::health::api::healthz;
 use anyhow::anyhow;
 use app_state::{AppState, Configuration};
-use axum::Router;
+use axum::{Router, routing::get};
 use clap::Parser;
 use rand_core::OsRng;
 use sp_core::{Pair, sr25519};
@@ -26,10 +30,9 @@ async fn main() -> anyhow::Result<()> {
         .await
         .map_err(|_| anyhow!("Unable to bind to given server address"))?;
 
-    let mut routes = Router::new().with_state(app_state);
     // TODO: add loggings
 
-    axum::serve(listener, routes.into_make_service()).await?;
+    axum::serve(listener, app(app_state).into_make_service()).await?;
     Ok(())
 }
 
@@ -52,4 +55,12 @@ pub struct StartupArgs {
         default_value = "ws://localhost:9944"
     )]
     pub chain_endpoint: String,
+}
+
+pub fn app(app_state: AppState) -> Router {
+    let routes = Router::new()
+        .route("/healthz", get(healthz))
+        .with_state(app_state);
+
+    routes
 }

@@ -20,6 +20,8 @@ thiserror     ="2.0.12"
 tracing                 ="0.1.41"
 rand_core         ={ version="0.6.4" }
 
+[dev-dependencies]
+reqwest           ={ version="0.12.12", features=["json"] }
 [features]
 default = ["std"]
 std         =["sp-core/std"]

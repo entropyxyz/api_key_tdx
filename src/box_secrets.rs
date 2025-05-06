@@ -17,7 +17,7 @@
 use bip39::{Language, Mnemonic};
 use hkdf::Hkdf;
 use sha2::Sha256;
-use subxt::ext::sp_core::{sr25519, Pair};
+use subxt::ext::sp_core::{Pair, sr25519};
 use x25519_dalek::StaticSecret;
 use zeroize::Zeroize;
 
@@ -66,7 +66,13 @@ fn get_x25519_secret_from_hkdf(hkdf: &Hkdf<Sha256>) -> Result<StaticSecret, Err>
 #[cfg(any(test, feature = "test_helpers"))]
 pub fn get_signer_and_x25519_secret_from_mnemonic(
     mnemonic: &str,
-) -> Result<(subxt::tx::PairSigner<crate::EntropyConfig, sr25519::Pair>, StaticSecret), Err> {
+) -> Result<
+    (
+        subxt::tx::PairSigner<crate::EntropyConfig, sr25519::Pair>,
+        StaticSecret,
+    ),
+    Err,
+> {
     let hkdf = get_hkdf_from_mnemonic(mnemonic)?;
     let (pair, _) = get_signer_from_hkdf(&hkdf)?;
     let pair_signer = subxt::tx::PairSigner::new(pair);

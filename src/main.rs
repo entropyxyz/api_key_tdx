@@ -6,13 +6,19 @@ use anyhow::anyhow;
 use app_state::{AppState, Configuration};
 use axum::Router;
 use clap::Parser;
+use rand_core::OsRng;
+use sp_core::{Pair, sr25519};
 use std::{net::SocketAddr, str::FromStr};
+use x25519_dalek::StaticSecret;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let args = StartupArgs::parse();
     let configuration = Configuration::new(args.chain_endpoint);
-    // TODO add keys and app state
+
+    let (pair, _seed) = sr25519::Pair::generate();
+    let x25519_secret = StaticSecret::random_from_rng(OsRng);
+    let app_state = AppState::new(configuration, pair, x25519_secret);
     // TODO add loki maybe
     let addr = SocketAddr::from_str(&args.box_url)
         .map_err(|_| anyhow!("Failed to parse threshold url"))?;
@@ -20,7 +26,7 @@ async fn main() -> anyhow::Result<()> {
         .await
         .map_err(|_| anyhow!("Unable to bind to given server address"))?;
 
-    let mut routes = Router::new();
+    let mut routes = Router::new().with_state(app_state);
     // TODO: add loggings
 
     axum::serve(listener, routes.into_make_service()).await?;

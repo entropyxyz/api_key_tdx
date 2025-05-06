@@ -18,6 +18,7 @@ subxt             = { version = "0.38.0", features=["substrate-compat"]}
 zeroize            ="1.8.1"
 thiserror     ="2.0.12"
 tracing                 ="0.1.41"
+rand_core         ={ version="0.6.4" }
 
 [features]
 default = ["std"]

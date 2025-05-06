@@ -1,4 +1,6 @@
 pub mod app_state;
+pub mod box_secrets;
+pub mod errors;
 
 use anyhow::anyhow;
 use app_state::{AppState, Configuration};

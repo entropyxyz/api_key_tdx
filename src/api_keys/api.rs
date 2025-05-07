@@ -78,9 +78,16 @@ pub async fn make_request(
                 .replace("xxxREPLACE_MExxx", &api_key_info);
             Ok(client.get(url).send().await?)
         }
-        // "post" => {
-
-        // }
+        "post" => {
+            let result = client
+                .post(user_make_request_info.api_url)
+                .header("Content-Type", "application/json")
+                .header("Authorization", format!("Bearer {}", &api_key_info))
+                .body(user_make_request_info.request_body)
+                .send()
+                .await?;
+            Ok(result)
+        }
         _ => Err(Err::UnsupportedHttpVerb),
     }?;
 

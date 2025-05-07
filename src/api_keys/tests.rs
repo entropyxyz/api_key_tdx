@@ -45,7 +45,7 @@ async fn test_deploy_api_key() {
 
 #[tokio::test]
 #[serial]
-async fn test_make_request() {
+async fn test_make_request_get() {
     let app_state = setup_client().await;
     let one = AccountKeyring::One;
     let box_url_and_key = (
@@ -80,6 +80,7 @@ async fn test_make_request() {
 }
 
 // TODO: negative test for deploy key and make request
+// TODO: test post
 #[tokio::test]
 async fn test_stale_check() {
     let result = check_stale(1, 1).await;

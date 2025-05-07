@@ -62,6 +62,16 @@ impl AppState {
         Ok(())
     }
 
+    /// Reads from api key will error if no value, call exists_in_request_limit to check
+    pub fn read_from_api_keys(&self, key: &([u8; 32], String)) -> Result<Option<String>, Err> {
+        self.clear_poisioned_api_keys();
+        let api_keys = self
+            .api_keys
+            .read()
+            .map_err(|e| Err::PosionError(e.to_string()))?;
+        Ok(api_keys.get(key).cloned())
+    }
+
     /// Clears a poisioned lock from request limit
     pub fn clear_poisioned_api_keys(&self) {
         if self.api_keys.is_poisoned() {

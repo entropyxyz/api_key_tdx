@@ -17,9 +17,9 @@ pub const TIME_BUFFER: u64 = 20;
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct DeployApiKeyInfo {
-    api_key: String,
-    api_service: String,
-    timestamp: u64,
+    pub api_key: String,
+    pub api_service: String,
+    pub timestamp: u64,
 }
 
 pub async fn deploy_api_key(
@@ -44,7 +44,7 @@ pub async fn deploy_api_key(
 }
 
 // Get current timestamp
-fn get_current_timestamp() -> Result<u64, Err> {
+pub fn get_current_timestamp() -> Result<u64, Err> {
     Ok(SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs())
 }
 

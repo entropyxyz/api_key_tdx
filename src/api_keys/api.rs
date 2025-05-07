@@ -18,7 +18,15 @@ pub const TIME_BUFFER: u64 = 20;
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct DeployApiKeyInfo {
     pub api_key: String,
-    pub api_service: String,
+    pub api_url: String,
+    pub timestamp: u64,
+}
+
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+pub struct SendApiKeyMessage {
+    pub request_body: String,
+    pub http_verb: String,
+    pub api_url: String,
     pub timestamp: u64,
 }
 
@@ -36,13 +44,35 @@ pub async fn deploy_api_key(
     check_stale(user_api_key_info.timestamp, current_timestamp).await?;
 
     app_state.write_to_api_keys(
-        (request_author.0, user_api_key_info.api_service),
+        (request_author.0, user_api_key_info.api_url),
         user_api_key_info.api_key,
     )?;
 
     Ok(StatusCode::OK)
 }
 
+pub async fn make_request(
+    State(app_state): State<AppState>,
+    Json(encrypted_msg): Json<EncryptedSignedMessage>,
+) -> Result<StatusCode, Err> {
+    let signed_message = encrypted_msg.decrypt(&app_state.x25519_secret, &[])?;
+
+    let user_make_request_info: SendApiKeyMessage =
+        serde_json::from_slice(&signed_message.message.0)?;
+
+    let request_author = SubxtAccountId32(*signed_message.account_id().as_ref());
+    let current_timestamp = get_current_timestamp()?;
+
+    check_stale(user_make_request_info.timestamp, current_timestamp).await?;
+
+    let api_key_info =
+        app_state.read_from_api_keys(&(request_author.0, user_make_request_info.api_url))?;
+
+    // TODO: do request (post/get) (add more later)
+    // TODO: return result
+
+    Ok(StatusCode::OK)
+}
 // Get current timestamp
 pub fn get_current_timestamp() -> Result<u64, Err> {
     Ok(SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs())

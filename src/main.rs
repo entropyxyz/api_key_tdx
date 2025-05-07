@@ -6,7 +6,10 @@ pub mod health;
 #[cfg(test)]
 pub mod test_helpers;
 
-use crate::{api_keys::api::deploy_api_key, health::api::healthz};
+use crate::{
+    api_keys::api::{deploy_api_key, make_request},
+    health::api::healthz,
+};
 use anyhow::anyhow;
 use app_state::{AppState, Configuration};
 use axum::{
@@ -65,6 +68,7 @@ pub fn app(app_state: AppState) -> Router {
     let routes = Router::new()
         .route("/healthz", get(healthz))
         .route("/deploy-api-key", post(deploy_api_key))
+        .route("/make-request", post(make_request))
         .with_state(app_state);
 
     routes

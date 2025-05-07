@@ -71,10 +71,19 @@ pub async fn make_request(
 
     let client = reqwest::Client::new();
 
-    let url = user_make_request_info
-        .api_url
-        .replace("xxxREPLACE_MExxx", &api_key_info);
-    let response = client.get(url).send().await?;
+    let response = match user_make_request_info.http_verb.as_str() {
+        "get" => {
+            let url = user_make_request_info
+                .api_url
+                .replace("xxxREPLACE_MExxx", &api_key_info);
+            Ok(client.get(url).send().await?)
+        }
+        // "post" => {
+
+        // }
+        _ => Err(Err::UnsupportedHttpVerb),
+    }?;
+
     // let result = client
     //     .post(user_make_request_info.api_url)
     //     .header("Content-Type", "application/json")

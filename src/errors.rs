@@ -20,6 +20,8 @@ pub enum Err {
     PosionError(String),
     #[error("Message is too old")]
     StaleMessage,
+    #[error("Http verb is unsupported")]
+    UnsupportedHttpVerb,
     #[error("Time subtraction error: {0}")]
     SystemTime(#[from] std::time::SystemTimeError),
     #[error("Http client: {0}")]

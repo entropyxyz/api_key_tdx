@@ -24,6 +24,8 @@ entropy-protocol={ version="0.4.0-rc.1", git="https://github.com/entropyxyz/entr
 
 [dev-dependencies]
 reqwest           ={ version="0.12.12", features=["json"] }
+serial_test ="3.2.0"
+
 [features]
 default = ["std"]
 std         =["sp-core/std"]

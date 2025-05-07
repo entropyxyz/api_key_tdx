@@ -13,7 +13,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use subxt::utils::AccountId32 as SubxtAccountId32;
 
 /// Defines the maximum allowed time difference for an api call in seconds
-const TIME_BUFFER: u64 = 20;
+pub const TIME_BUFFER: u64 = 20;
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct DeployApiKeyInfo {

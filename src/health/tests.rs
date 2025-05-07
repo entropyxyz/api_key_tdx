@@ -15,8 +15,10 @@
 
 use crate::test_helpers::setup_client;
 use axum::http::StatusCode;
+use serial_test::serial;
 
 #[tokio::test]
+#[serial]
 async fn health() {
     setup_client().await;
 

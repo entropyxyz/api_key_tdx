@@ -64,7 +64,7 @@ pub struct StartupArgs {
 pub fn app(app_state: AppState) -> Router {
     let routes = Router::new()
         .route("/healthz", get(healthz))
-        .route("deploy-api-key", post(deploy_api_key))
+        .route("/deploy-api-key", post(deploy_api_key))
         .with_state(app_state);
 
     routes

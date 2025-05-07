@@ -4,12 +4,24 @@ use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
 };
+use entropy_protocol::{errors::ProtocolExecutionErr, sign_and_encrypt::EncryptedSignedMessageErr};
+
 #[derive(Debug, Error)]
 pub enum Err {
     #[error("Cannot get output from hasher in HKDF {0}")]
     Hkdf(hkdf::InvalidLength),
     #[error("mnemonic failure: {0:?}")]
     Mnemonic(String),
+    #[error("Encryption or signing error: {0}")]
+    EncryptionOrAuthentication(#[from] EncryptedSignedMessageErr),
+    #[error("JSON: {0}")]
+    Json(#[from] serde_json::Error),
+    #[error("Posion Mutex error: {0}")]
+    PosionError(String),
+    #[error("Message is too old")]
+    StaleMessage,
+    #[error("Time subtraction error: {0}")]
+    SystemTime(#[from] std::time::SystemTimeError),
 }
 
 impl From<hkdf::InvalidLength> for Err {

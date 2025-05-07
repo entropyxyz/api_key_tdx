@@ -1,3 +1,4 @@
+pub mod api_keys;
 pub mod app_state;
 pub mod box_secrets;
 pub mod errors;
@@ -5,10 +6,13 @@ pub mod health;
 #[cfg(test)]
 pub mod test_helpers;
 
-use crate::health::api::healthz;
+use crate::{api_keys::api::deploy_api_key, health::api::healthz};
 use anyhow::anyhow;
 use app_state::{AppState, Configuration};
-use axum::{Router, routing::get};
+use axum::{
+    Router,
+    routing::{get, post},
+};
 use clap::Parser;
 use rand_core::OsRng;
 use sp_core::{Pair, sr25519};
@@ -60,6 +64,7 @@ pub struct StartupArgs {
 pub fn app(app_state: AppState) -> Router {
     let routes = Router::new()
         .route("/healthz", get(healthz))
+        .route("deploy-api-key", post(deploy_api_key))
         .with_state(app_state);
 
     routes

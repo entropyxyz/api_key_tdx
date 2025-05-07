@@ -4,9 +4,7 @@ use super::api::{
     DeployApiKeyInfo, SendApiKeyMessage, TIME_BUFFER, check_stale, get_current_timestamp,
 };
 use crate::test_helpers::setup_client;
-use entropy_protocol::sign_and_encrypt::{
-    EncryptedSignedMessage, EncryptedSignedMessageErr, SignedMessage,
-};
+use entropy_protocol::sign_and_encrypt::EncryptedSignedMessage;
 use sp_core::Pair;
 use sp_keyring::{AccountKeyring, Sr25519Keyring};
 
@@ -55,8 +53,8 @@ async fn test_make_request_get() {
     let api_key =
         "live_MdrxblW1YgdnmuI3jVSJNLSqcdljuF3T2PDy26hWXk7fROoojH479EkhrDhYJIy4".to_string();
     let api_url =
-        "https://api.thecatapi.com/v1/images/search?limit=10&breed_ids=beng&api_key=xxxREPLACE_MExxx".to_string();
-    app_state.write_to_api_keys((one.pair().public().0, api_url.clone()), api_key);
+        "https://api.thecatapi.com/v1/images/search?limit=1&breed_ids=beng&api_key=xxxREPLACE_MExxx".to_string();
+    let _ = app_state.write_to_api_keys((one.pair().public().0, api_url.clone()), api_key);
 
     let user_make_request_info = SendApiKeyMessage {
         request_body: "test".to_string(),

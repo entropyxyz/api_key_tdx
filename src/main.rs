@@ -1,6 +1,5 @@
 pub mod api_keys;
 pub mod app_state;
-pub mod box_secrets;
 pub mod errors;
 pub mod health;
 #[cfg(test)]

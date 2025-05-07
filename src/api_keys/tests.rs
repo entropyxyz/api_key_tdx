@@ -52,13 +52,15 @@ async fn test_make_request() {
         "http://127.0.0.1:3001/make-request".to_string(),
         app_state.x25519_public_key(),
     );
-    let api_key = "test".to_string();
-    let api_url = "test".to_string();
+    let api_key =
+        "live_MdrxblW1YgdnmuI3jVSJNLSqcdljuF3T2PDy26hWXk7fROoojH479EkhrDhYJIy4".to_string();
+    let api_url =
+        "https://api.thecatapi.com/v1/images/search?limit=10&breed_ids=beng&api_key=xxxREPLACE_MExxx".to_string();
     app_state.write_to_api_keys((one.pair().public().0, api_url.clone()), api_key);
 
     let user_make_request_info = SendApiKeyMessage {
         request_body: "test".to_string(),
-        http_verb: "post".to_string(),
+        http_verb: "get".to_string(),
         api_url: api_url.clone(),
         timestamp: get_current_timestamp().unwrap(),
     };
@@ -71,6 +73,10 @@ async fn test_make_request() {
     .await
     .unwrap();
     assert_eq!(test_deploy_api_key_result.status(), 200);
+    assert_eq!(
+        &test_deploy_api_key_result.text().await.unwrap()[0..10],
+        "[{\"breeds\""
+    );
 }
 
 // TODO: negative test for deploy key and make request

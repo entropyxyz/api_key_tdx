@@ -54,7 +54,7 @@ pub async fn deploy_api_key(
 pub async fn make_request(
     State(app_state): State<AppState>,
     Json(encrypted_msg): Json<EncryptedSignedMessage>,
-) -> Result<StatusCode, Err> {
+) -> Result<(StatusCode, String), Err> {
     let signed_message = encrypted_msg.decrypt(&app_state.x25519_secret, &[])?;
 
     let user_make_request_info: SendApiKeyMessage =
@@ -65,13 +65,24 @@ pub async fn make_request(
 
     check_stale(user_make_request_info.timestamp, current_timestamp).await?;
 
-    let api_key_info =
-        app_state.read_from_api_keys(&(request_author.0, user_make_request_info.api_url))?;
+    let api_key_info = app_state
+        .read_from_api_keys(&(request_author.0, user_make_request_info.api_url.clone()))?
+        .unwrap();
 
-    // TODO: do request (post/get) (add more later)
-    // TODO: return result
+    let client = reqwest::Client::new();
 
-    Ok(StatusCode::OK)
+    let url = user_make_request_info
+        .api_url
+        .replace("xxxREPLACE_MExxx", &api_key_info);
+    let response = client.get(url).send().await?;
+    // let result = client
+    //     .post(user_make_request_info.api_url)
+    //     .header("Content-Type", "application/json")
+    //     .body(user_make_request_info.request_body)
+    //     .send()
+    //     .await?;
+
+    Ok((StatusCode::OK, response.text().await?))
 }
 // Get current timestamp
 pub fn get_current_timestamp() -> Result<u64, Err> {

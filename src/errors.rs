@@ -22,6 +22,8 @@ pub enum Err {
     StaleMessage,
     #[error("Time subtraction error: {0}")]
     SystemTime(#[from] std::time::SystemTimeError),
+    #[error("Http client: {0}")]
+    HttpRequest(#[from] reqwest::Error),
 }
 
 impl From<hkdf::InvalidLength> for Err {

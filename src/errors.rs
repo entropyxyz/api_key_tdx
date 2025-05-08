@@ -24,6 +24,8 @@ pub enum Err {
     SystemTime(#[from] std::time::SystemTimeError),
     #[error("Http client: {0}")]
     HttpRequest(#[from] reqwest::Error),
+    #[error("Subxt: {0}")]
+    Subxt(#[from] subxt::Error),
 }
 
 impl IntoResponse for Err {

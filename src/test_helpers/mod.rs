@@ -6,7 +6,7 @@ use crate::{
     app_state::{AppState, Configuration},
 };
 use rand_core::OsRng;
-use sp_core::{sr25519, Pair};
+use sp_core::{Pair, sr25519};
 use test_server::start_test_api_server;
 use x25519_dalek::StaticSecret;
 

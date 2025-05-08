@@ -1,8 +1,8 @@
 pub mod api_keys;
 pub mod app_state;
+pub mod chain_api;
 pub mod errors;
 pub mod health;
-pub mod chain_api;
 #[cfg(test)]
 pub mod test_helpers;
 
@@ -13,12 +13,12 @@ use crate::{
 use anyhow::anyhow;
 use app_state::{AppState, Configuration};
 use axum::{
-    routing::{get, post},
     Router,
+    routing::{get, post},
 };
 use clap::Parser;
 use rand_core::OsRng;
-use sp_core::{sr25519, Pair};
+use sp_core::{Pair, sr25519};
 use std::{net::SocketAddr, str::FromStr};
 use x25519_dalek::StaticSecret;
 

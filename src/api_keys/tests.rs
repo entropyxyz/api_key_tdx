@@ -1,7 +1,7 @@
 use serial_test::serial;
 
 use super::api::{
-    check_stale, get_current_timestamp, DeployApiKeyInfo, SendApiKeyMessage, TIME_BUFFER,
+    DeployApiKeyInfo, SendApiKeyMessage, TIME_BUFFER, check_stale, get_current_timestamp,
 };
 use crate::test_helpers::setup_client;
 use entropy_protocol::sign_and_encrypt::EncryptedSignedMessage;

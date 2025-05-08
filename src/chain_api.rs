@@ -17,8 +17,8 @@
 #![allow(clippy::all)]
 pub use subxt::PolkadotConfig as EntropyConfig;
 use subxt::{
-    backend::{legacy::LegacyRpcMethods, rpc::RpcClient},
     OnlineClient,
+    backend::{legacy::LegacyRpcMethods, rpc::RpcClient},
 };
 
 #[subxt::subxt(runtime_metadata_path = "entropy_metadata.scale")]

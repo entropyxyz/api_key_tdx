@@ -32,6 +32,8 @@ pub enum Err {
     NoEvent,
     #[error("Could not sumbit transaction {0}")]
     BadEvent(String),
+    #[error("Timed out trying to declare to chain")]
+    TimedOut,
 }
 
 impl IntoResponse for Err {

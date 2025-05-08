@@ -45,7 +45,9 @@ async fn main() -> anyhow::Result<()> {
         x25519_public_key: app_state.x25519_public_key(),
     };
 
-    delcare_to_chain(&api, &rpc, server_info, &pair, None).await;
+    let _ = delcare_to_chain(&api, &rpc, server_info, &pair, None)
+        .await
+        .map_err(|_| anyhow!("Unable declare self to chain"))?;
     // TODO add loki maybe
     let addr = SocketAddr::from_str(&args.box_url)
         .map_err(|_| anyhow!("Failed to parse threshold url"))?;

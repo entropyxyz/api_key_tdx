@@ -5,7 +5,9 @@ use crate::{
     },
     errors::Err,
 };
-use sp_core::{Pair, sr25519, crypto::Ss58Codec};
+use backoff::ExponentialBackoff;
+use sp_core::{Pair, crypto::Ss58Codec, sr25519};
+use std::time::Duration;
 use subxt::{
     Config, OnlineClient,
     backend::legacy::LegacyRpcMethods,
@@ -15,8 +17,6 @@ use subxt::{
     utils::{AccountId32 as SubxtAccountId32, H256, MultiSignature},
 };
 use subxt_core::{storage::address::Address, utils::Yes};
-use backoff::ExponentialBackoff;
-use std::time::Duration;
 
 /// Blocks a transaction is valid for
 pub const MORTALITY_BLOCKS: u64 = 32;
@@ -31,24 +31,29 @@ pub async fn delcare_to_chain(
     // Use the default maximum elapsed time of 15 minutes.
     // This means if we do not get a connection within 15 minutes the process will terminate and the
     // keypair will be lost.
-    let backoff = if cfg!(test) { create_test_backoff() } else { ExponentialBackoff::default() };
+    let backoff = if cfg!(test) {
+        create_test_backoff()
+    } else {
+        ExponentialBackoff::default()
+    };
     let add_box_call = entropy::tx().outtie().add_box(server_info);
     let add_box = || async {
-        println!("attempted to make add_box tx, If failed probably add funds to {:?}", pair.public().to_ss58check());
+        println!(
+            "attempted to make add_box tx, If failed probably add funds to {:?}",
+            pair.public().to_ss58check()
+        );
         let in_block =
             submit_transaction_with_pair(api, rpc, &pair, &add_box_call, nonce_option).await?;
         let result_event = in_block
             .find_first::<entropy::outtie::events::BoxAdded>()
-            .unwrap()
+            .map_err(|_| Err::NoEvent)?
             .ok_or(Err::NoEvent)?;
         Ok(())
     };
-    println!("attempted to make add_box tx, If failed probably add funds to {:?}", pair.public().to_ss58check());
     // TODO: maybe add loggings here if fialed
     backoff::future::retry(backoff.clone(), add_box)
         .await
-        .map_err(|_| "Timed out waiting for account to be funded")
-        .unwrap();
+        .map_err(|_| Err::TimedOut)?;
     Ok(())
 }
 
@@ -175,7 +180,6 @@ impl Signer<EntropyConfig> for Sr25519Signer {
         MultiSignature::Sr25519(self.pair.sign(signer_payload).0)
     }
 }
-
 
 #[cfg(test)]
 fn create_test_backoff() -> ExponentialBackoff {

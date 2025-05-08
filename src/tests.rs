@@ -1,7 +1,14 @@
+use crate::{
+    chain_api::{
+        entropy::runtime_types::pallet_outtie::module::OuttieServerInfo, get_api, get_rpc,
+    },
+    launch::delcare_to_chain,
+};
+use backoff::ExponentialBackoff;
+use entropy_testing_utils::{ChainSpecType, substrate_context::test_node_process};
 use serial_test::serial;
-use entropy_testing_utils::{substrate_context::test_node_process, ChainSpecType};
-use crate::{chain_api::{get_api, get_rpc}, launch::delcare_to_chain};
-use sp_keyring::{AccountKeyring};
+use sp_keyring::AccountKeyring;
+use std::time::Duration;
 
 #[tokio::test]
 #[serial]
@@ -11,6 +18,17 @@ async fn test_declare() {
     let api = get_api(&cxt.ws_url).await.unwrap();
     let rpc = get_rpc(&cxt.ws_url).await.unwrap();
 
-    // let result = delcare_to_chain();
+    let server_info = OuttieServerInfo {
+        endpoint: "test".into(),
+        x25519_public_key: [0u8; 32],
+    };
 
+    let result = delcare_to_chain(&api, &rpc, server_info, &alice.pair(), None)
+        .await;
+    // Alice has funds should not time out and register to chain
+    assert!(result.is_ok());
 }
+
+#[tokio::test]
+#[serial]
+async fn test_declare_times_out() {}

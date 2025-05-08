@@ -1,6 +1,6 @@
 //! A simple HTTP API which has authentication - for testing
 use axum::{
-    body::Body,
+    body::{Body, Bytes},
     extract::State,
     http::{Request, StatusCode},
     middleware::{self, Next},
@@ -46,12 +46,17 @@ pub async fn start_test_api_server() {
     });
 }
 
+/// An example GET handler
 async fn protected_handler() -> &'static str {
     "Success response"
 }
 
-async fn protected_post_handler() -> &'static str {
-    "Succcess response"
+/// An example POST handler
+async fn protected_post_handler(body: Bytes) -> String {
+    format!(
+        "Succcess response - input was {}",
+        String::from_utf8_lossy(&body)
+    )
 }
 
 /// Middleware to accept API keys given in either the header or the URL

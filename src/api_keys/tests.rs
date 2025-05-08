@@ -1,7 +1,7 @@
 use serial_test::serial;
 
 use super::api::{
-    DeployApiKeyInfo, SendApiKeyMessage, TIME_BUFFER, check_stale, get_current_timestamp,
+    check_stale, get_current_timestamp, DeployApiKeyInfo, SendApiKeyMessage, TIME_BUFFER,
 };
 use crate::test_helpers::setup_client;
 use entropy_protocol::sign_and_encrypt::EncryptedSignedMessage;
@@ -74,6 +74,41 @@ async fn test_make_request_get() {
     assert_eq!(
         &test_deploy_api_key_result.text().await.unwrap()[0..10],
         "[{\"breeds\""
+    );
+}
+
+#[tokio::test]
+#[serial]
+async fn test_make_request_get_with_local_test_server() {
+    let app_state = setup_client().await;
+    let one = AccountKeyring::One;
+    let box_url_and_key = (
+        "http://127.0.0.1:3001/make-request".to_string(),
+        app_state.x25519_public_key(),
+    );
+    let api_key = "some-secret".to_string();
+    let api_url = "http://127.0.0.1:3002/protected?api-key=xxxREPLACE_MExxx".to_string();
+    let _ = app_state.write_to_api_keys((one.pair().public().0, api_url.clone()), api_key);
+
+    let user_make_request_info = SendApiKeyMessage {
+        request_body: "test".to_string(),
+        http_verb: "get".to_string(),
+        api_url: api_url.clone(),
+        timestamp: get_current_timestamp().unwrap(),
+    };
+
+    let test_deploy_api_key_result = submit_transaction_request(
+        box_url_and_key,
+        serde_json::to_vec(&user_make_request_info.clone()).unwrap(),
+        one,
+    )
+    .await
+    .unwrap();
+
+    assert_eq!(test_deploy_api_key_result.status(), 200);
+    assert_eq!(
+        &test_deploy_api_key_result.text().await.unwrap(),
+        "Success response"
     );
 }
 

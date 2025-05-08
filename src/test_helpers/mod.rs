@@ -1,10 +1,13 @@
 #![cfg(test)]
+mod test_server;
+
 use crate::{
     app,
     app_state::{AppState, Configuration},
 };
 use rand_core::OsRng;
-use sp_core::{Pair, sr25519};
+use sp_core::{sr25519, Pair};
+use test_server::start_test_api_server;
 use x25519_dalek::StaticSecret;
 
 pub const DEFAULT_ENDPOINT: &str = "ws://localhost:9944";
@@ -24,6 +27,9 @@ pub async fn setup_client() -> AppState {
     tokio::spawn(async move {
         axum::serve(listener, app).await.unwrap();
     });
+
+    // Now start a server to test API calls with
+    start_test_api_server().await;
 
     app_state
 }

@@ -20,6 +20,7 @@ tracing                 ="0.1.41"
 rand_core         ={ version="0.6.4" }
 entropy-protocol={ version="0.4.0-rc.1", git="https://github.com/entropyxyz/entropy-core", features=["server"] }
 reqwest           ={ version="0.12.12", features=["json"] }
+url = "2.5"
 
 [dev-dependencies]
 serial_test ="3.2.0"

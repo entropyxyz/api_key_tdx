@@ -2,6 +2,7 @@ pub mod api_keys;
 pub mod app_state;
 pub mod errors;
 pub mod health;
+pub mod chain_api;
 #[cfg(test)]
 pub mod test_helpers;
 

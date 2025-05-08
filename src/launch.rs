@@ -44,7 +44,7 @@ pub async fn delcare_to_chain(
         );
         let in_block =
             submit_transaction_with_pair(api, rpc, &pair, &add_box_call, nonce_option).await?;
-        let result_event = in_block
+        let _result_event = in_block
             .find_first::<entropy::outtie::events::BoxAdded>()
             .map_err(|_| Err::NoEvent)?
             .ok_or(Err::NoEvent)?;

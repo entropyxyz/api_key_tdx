@@ -22,8 +22,7 @@ use axum::{
     routing::{get, post},
 };
 use chain_api::{
-    EntropyConfig,
-    entropy::{self, runtime_types::pallet_outtie::module::OuttieServerInfo},
+    entropy::{runtime_types::pallet_outtie::module::OuttieServerInfo},
 };
 use clap::Parser;
 use rand_core::OsRng;

@@ -18,6 +18,8 @@ pub enum Err {
     PosionError(String),
     #[error("Message is too old")]
     StaleMessage,
+    #[error("Error getting block hash")]
+    BlockHash,
     #[error("Http verb is unsupported")]
     UnsupportedHttpVerb,
     #[error("Time subtraction error: {0}")]
@@ -26,6 +28,10 @@ pub enum Err {
     HttpRequest(#[from] reqwest::Error),
     #[error("Subxt: {0}")]
     Subxt(#[from] subxt::Error),
+    #[error("No event following extrinsic submission")]
+    NoEvent,
+    #[error("Could not sumbit transaction {0}")]
+    BadEvent(String),
 }
 
 impl IntoResponse for Err {

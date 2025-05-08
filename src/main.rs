@@ -3,18 +3,24 @@ pub mod app_state;
 pub mod chain_api;
 pub mod errors;
 pub mod health;
+pub mod launch;
 #[cfg(test)]
 pub mod test_helpers;
 
 use crate::{
     api_keys::api::{deploy_api_key, make_request},
     health::api::healthz,
+    launch::delcare_to_chain,
 };
 use anyhow::anyhow;
 use app_state::{AppState, Configuration};
 use axum::{
     Router,
     routing::{get, post},
+};
+use chain_api::{
+    EntropyConfig,
+    entropy::{self, runtime_types::pallet_outtie::module::OuttieServerInfo},
 };
 use clap::Parser;
 use rand_core::OsRng;
@@ -29,16 +35,21 @@ async fn main() -> anyhow::Result<()> {
 
     let (pair, _seed) = sr25519::Pair::generate();
     let x25519_secret = StaticSecret::random_from_rng(OsRng);
-    let app_state = AppState::new(configuration, pair, x25519_secret);
+    let app_state = AppState::new(configuration, pair.clone(), x25519_secret);
+    let (api, rpc) = app_state.get_api_rpc().await.expect("No chain connection");
+    let server_info = OuttieServerInfo {
+        endpoint: args.box_url.clone().into(),
+        x25519_public_key: app_state.x25519_public_key(),
+    };
+
+    delcare_to_chain(&api, &rpc, server_info, &pair, None).await;
     // TODO add loki maybe
     let addr = SocketAddr::from_str(&args.box_url)
         .map_err(|_| anyhow!("Failed to parse threshold url"))?;
     let listener = tokio::net::TcpListener::bind(&addr)
         .await
         .map_err(|_| anyhow!("Unable to bind to given server address"))?;
-
     // TODO: add loggings
-
     axum::serve(listener, app(app_state).into_make_service()).await?;
     Ok(())
 }

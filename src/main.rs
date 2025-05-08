@@ -7,6 +7,9 @@ pub mod launch;
 #[cfg(test)]
 pub mod test_helpers;
 
+#[cfg(test)]
+pub mod tests;
+
 use crate::{
     api_keys::api::{deploy_api_key, make_request},
     health::api::healthz,

@@ -1,0 +1,1 @@
+cp ../entropy-core/target/release/entropy ./target/release/entropy

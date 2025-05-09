@@ -1,12 +1,12 @@
 //! A simple HTTP API which has authentication - for testing
 use axum::{
+    Router,
     body::{Body, Bytes},
     extract::State,
     http::{Request, StatusCode},
     middleware::{self, Next},
     response::Response,
     routing::{get, post},
-    Router,
 };
 use std::net::SocketAddr;
 use std::sync::Arc;

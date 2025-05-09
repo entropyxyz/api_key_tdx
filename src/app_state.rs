@@ -1,11 +1,16 @@
-use crate::errors::Err;
+use crate::{
+    chain_api::{EntropyConfig, get_api, get_rpc},
+    errors::Err,
+};
 use serde::Deserialize;
 use sp_core::{Pair, crypto::AccountId32, sr25519};
 use std::{
     collections::HashMap,
     sync::{Arc, RwLock},
 };
-use subxt::utils::AccountId32 as SubxtAccountId32;
+use subxt::{
+    OnlineClient, backend::legacy::LegacyRpcMethods, utils::AccountId32 as SubxtAccountId32,
+};
 use x25519_dalek::StaticSecret;
 
 /// Application state struct which is cloned and made available to every axum HTTP route handler function
@@ -34,6 +39,16 @@ impl AppState {
             configuration,
             api_keys: Arc::new(RwLock::new(Default::default())),
         }
+    }
+
+    /// Convenience function to get chain api and rpc
+    pub async fn get_api_rpc(
+        &self,
+    ) -> Result<(OnlineClient<EntropyConfig>, LegacyRpcMethods<EntropyConfig>), Err> {
+        Ok((
+            get_api(&self.configuration.endpoint).await?,
+            get_rpc(&self.configuration.endpoint).await?,
+        ))
     }
 
     /// Get the [AccountId32]

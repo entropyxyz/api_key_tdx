@@ -26,6 +26,10 @@ jobs:
           docker create --name extract-entropy-binary entropyxyz/entropy:latest
           docker cp extract-entropy-binary:/usr/local/bin/entropy ./entropy
           docker container remove extract-entropy-binary
+          ls -la ./entropy
+          chmod a+x ./entropy
+          ls -la ./entropy
+          echo $(pwd)
 
       - name: Run tests
         run: ENTROPY_NODE=$(pwd) cargo test --release

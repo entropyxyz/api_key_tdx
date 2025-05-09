@@ -17,5 +17,15 @@ jobs:
             ~/.cargo/git
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Run Tests
-        run: cargo test --release
+      - name: Run Check
+        run: cargo check --tests
+
+      - name: Get entropy binary from latest release
+        run: |
+          docker pull entropyxyz/entropy:latest
+          docker create --name extract-entropy-binary entropy:latest
+          docker cp extract-entropy-binary:/usr/local/bin/entropy ./entropy
+          docker container remove extract-entropy-binary
+
+      - name: Run tests
+        run: ENTROPY_NODE=$(pwd) cargo test --release

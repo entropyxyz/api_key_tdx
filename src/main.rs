@@ -19,15 +19,19 @@ use anyhow::anyhow;
 use app_state::{AppState, Configuration};
 use axum::{
     Router,
+    http::Method,
     routing::{get, post},
 };
-use chain_api::{
-    entropy::{runtime_types::pallet_outtie::module::OuttieServerInfo},
-};
+use chain_api::entropy::runtime_types::pallet_outtie::module::OuttieServerInfo;
 use clap::Parser;
 use rand_core::OsRng;
 use sp_core::{Pair, sr25519};
 use std::{net::SocketAddr, str::FromStr};
+use tower_http::{
+    cors::{Any, CorsLayer},
+    trace::{self, TraceLayer},
+};
+use tracing::Level;
 use x25519_dalek::StaticSecret;
 
 #[tokio::main]
@@ -53,7 +57,7 @@ async fn main() -> anyhow::Result<()> {
     let listener = tokio::net::TcpListener::bind(&addr)
         .await
         .map_err(|_| anyhow!("Unable to bind to given server address"))?;
-    // TODO: add loggings
+
     axum::serve(listener, app(app_state).into_make_service()).await?;
     Ok(())
 }
@@ -84,7 +88,25 @@ pub fn app(app_state: AppState) -> Router {
         .route("/healthz", get(healthz))
         .route("/deploy-api-key", post(deploy_api_key))
         .route("/make-request", post(make_request))
-        .with_state(app_state);
+        .with_state(app_state)
+        .layer(
+            TraceLayer::new_for_http()
+                .make_span_with(|request: &axum::http::Request<axum::body::Body>| {
+                    tracing::info_span!(
+                        "http-request",
+                        uuid = %uuid::Uuid::new_v4(),
+                        uri = %request.uri(),
+                        method = %request.method(),
+                    )
+                })
+                .on_request(trace::DefaultOnRequest::new().level(Level::INFO))
+                .on_response(trace::DefaultOnResponse::new().level(Level::INFO)),
+        )
+        .layer(
+            CorsLayer::new()
+                .allow_origin(Any)
+                .allow_methods([Method::GET, Method::POST]),
+        );
 
     routes
 }

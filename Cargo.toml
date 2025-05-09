@@ -24,6 +24,8 @@ entropy-testing-utils={ branch="master", git="https://github.com/entropyxyz/entr
 reqwest           ={ version="0.12.12", features=["json"] }
 url = "2.5"
 backoff            ={ version="0.4.0", features=["tokio"] }
+tower-http              ={ version="0.6.2", features=["trace", "cors"] }
+uuid                    ={ version="1.16.0", features=["v4"] }
 
 [dev-dependencies]
 serial_test ="3.2.0"

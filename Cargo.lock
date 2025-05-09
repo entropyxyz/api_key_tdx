@@ -278,8 +278,10 @@ dependencies = [
  "subxt-core",
  "thiserror 2.0.12",
  "tokio",
+ "tower-http",
  "tracing",
  "url",
+ "uuid",
  "x25519-dalek",
  "zeroize",
 ]

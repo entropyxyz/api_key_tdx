@@ -30,6 +30,8 @@ jobs:
           chmod a+x ./entropy
           ls -la ./entropy
           echo $(pwd)
+          whoami
+          ./entropy --version
 
       - name: Run tests
         run: ENTROPY_NODE=$(pwd) cargo test --release

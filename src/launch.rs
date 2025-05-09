@@ -184,7 +184,6 @@ impl Signer<EntropyConfig> for Sr25519Signer {
     }
 }
 
-#[cfg(test)]
 fn create_test_backoff() -> ExponentialBackoff {
     let mut backoff = ExponentialBackoff::default();
     backoff.max_elapsed_time = Some(Duration::from_secs(5));

@@ -34,6 +34,8 @@ pub enum Err {
     BadEvent(String),
     #[error("Timed out trying to declare to chain")]
     TimedOut,
+    #[error("Attestation: {0}")]
+    Attestation(#[from] crate::attestation::errors::AttestationErr),
 }
 
 impl IntoResponse for Err {

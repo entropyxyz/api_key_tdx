@@ -1,4 +1,4 @@
-use crate::errors::Err;
+use crate::{attestation::create_quote, errors::Err};
 use backoff::ExponentialBackoff;
 use entropy_client::chain_api::{
     entropy::{self, runtime_types::pallet_outtie::module::JoiningOuttieServerInfo},
@@ -37,7 +37,10 @@ pub async fn delcare_to_chain(
     } else {
         ExponentialBackoff::default()
     };
-    let quote = Vec::new(); // TODO
+
+    let nonce = [0; 32]; // TODO
+    let quote = create_quote(nonce, pair.public().into(), server_info.x25519_public_key).await?;
+
     let add_box_call = entropy::tx().outtie().add_box(server_info, quote);
     let add_box = || async {
         println!(

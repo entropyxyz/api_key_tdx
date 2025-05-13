@@ -1,9 +1,10 @@
 pub mod api_keys;
 pub mod app_state;
-pub mod chain_api;
+pub mod attestation;
 pub mod errors;
 pub mod health;
 pub mod launch;
+
 #[cfg(test)]
 pub mod test_helpers;
 
@@ -18,15 +19,13 @@ use crate::{
 use anyhow::anyhow;
 use app_state::{AppState, Configuration};
 use axum::{
-    Router,
     routing::{get, post},
-};
-use chain_api::{
-    entropy::{runtime_types::pallet_outtie::module::OuttieServerInfo},
+    Router,
 };
 use clap::Parser;
+use entropy_client::chain_api::entropy::runtime_types::pallet_outtie::module::JoiningOuttieServerInfo;
 use rand_core::OsRng;
-use sp_core::{Pair, sr25519};
+use sp_core::{sr25519, Pair};
 use std::{net::SocketAddr, str::FromStr};
 use x25519_dalek::StaticSecret;
 
@@ -39,7 +38,7 @@ async fn main() -> anyhow::Result<()> {
     let x25519_secret = StaticSecret::random_from_rng(OsRng);
     let app_state = AppState::new(configuration, pair.clone(), x25519_secret);
     let (api, rpc) = app_state.get_api_rpc().await.expect("No chain connection");
-    let server_info = OuttieServerInfo {
+    let server_info = JoiningOuttieServerInfo {
         endpoint: args.box_url.clone().into(),
         x25519_public_key: app_state.x25519_public_key(),
     };

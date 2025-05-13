@@ -1,20 +1,18 @@
-use crate::{
-    chain_api::{
-        EntropyConfig,
-        entropy::{self, runtime_types::pallet_outtie::module::OuttieServerInfo},
-    },
-    errors::Err,
-};
+use crate::errors::Err;
 use backoff::ExponentialBackoff;
-use sp_core::{Pair, crypto::Ss58Codec, sr25519};
+use entropy_client::chain_api::{
+    entropy::{self, runtime_types::pallet_outtie::module::JoiningOuttieServerInfo},
+    EntropyConfig,
+};
+use sp_core::{crypto::Ss58Codec, sr25519, Pair};
 use std::time::Duration;
 use subxt::{
-    Config, OnlineClient,
     backend::legacy::LegacyRpcMethods,
     blocks::ExtrinsicEvents,
     config::DefaultExtrinsicParamsBuilder as Params,
     tx::{Payload, Signer, TxStatus},
-    utils::{AccountId32 as SubxtAccountId32, H256, MultiSignature},
+    utils::{AccountId32 as SubxtAccountId32, MultiSignature, H256},
+    Config, OnlineClient,
 };
 use subxt_core::{storage::address::Address, utils::Yes};
 
@@ -22,12 +20,12 @@ use subxt_core::{storage::address::Address, utils::Yes};
 pub const MORTALITY_BLOCKS: u64 = 32;
 
 /// Declares an itself to the chain by calling add box to the outtie pallet
-/// Will log and backoff if account does not have funds, assumption is that 
+/// Will log and backoff if account does not have funds, assumption is that
 /// deployer will see this and fund the account to complete the spin up process
 pub async fn delcare_to_chain(
     api: &OnlineClient<EntropyConfig>,
     rpc: &LegacyRpcMethods<EntropyConfig>,
-    server_info: OuttieServerInfo,
+    server_info: JoiningOuttieServerInfo,
     pair: &sr25519::Pair,
     nonce_option: Option<u32>,
 ) -> Result<(), Err> {
@@ -39,7 +37,8 @@ pub async fn delcare_to_chain(
     } else {
         ExponentialBackoff::default()
     };
-    let add_box_call = entropy::tx().outtie().add_box(server_info);
+    let quote = Vec::new(); // TODO
+    let add_box_call = entropy::tx().outtie().add_box(server_info, quote);
     let add_box = || async {
         println!(
             "attempted to make add_box tx, If failed probably add funds to {:?}",

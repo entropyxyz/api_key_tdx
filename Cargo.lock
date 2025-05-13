@@ -264,8 +264,12 @@ dependencies = [
  "axum",
  "backoff",
  "clap",
+ "configfs-tsm",
+ "entropy-client",
  "entropy-protocol",
+ "entropy-shared",
  "entropy-testing-utils",
+ "rand 0.8.5",
  "rand_core 0.6.4",
  "reqwest",
  "serde",
@@ -276,6 +280,7 @@ dependencies = [
  "sp-keyring",
  "subxt",
  "subxt-core",
+ "tdx-quote",
  "thiserror 2.0.12",
  "tokio",
  "tracing",
@@ -1732,6 +1737,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "configfs-tsm"
+version = "0.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "69e259465c479ea772003ae9e70bcecebefa0e46e0862ffe728edefafc96006b"
+
+[[package]]
 name = "console"
 version = "0.15.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2942,27 +2953,38 @@ dependencies = [
 [[package]]
 name = "entropy-client"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=master#6464fd4e2ce55a98412bb438cbc5695b5684d635"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=peg%2Fouttie-attestation-logic#96803f639ab11fc1bd9afbb853fccb62bbbb019b"
 dependencies = [
  "anyhow",
+ "base64 0.22.1",
+ "blake2",
+ "entropy-protocol",
  "entropy-shared",
  "futures",
+ "hex",
+ "k256",
  "num",
+ "parity-scale-codec",
  "rand 0.8.5",
+ "rand_core 0.6.4",
+ "reqwest",
  "serde",
+ "serde_json",
  "sha3",
  "sp-core",
  "subxt",
  "subxt-core",
+ "synedrion",
  "thiserror 2.0.12",
  "tokio",
  "tracing",
+ "x25519-dalek",
 ]
 
 [[package]]
 name = "entropy-kvdb"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=master#6464fd4e2ce55a98412bb438cbc5695b5684d635"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=peg%2Fouttie-attestation-logic#96803f639ab11fc1bd9afbb853fccb62bbbb019b"
 dependencies = [
  "bincode",
  "chacha20poly1305 0.9.1",
@@ -3007,7 +3029,7 @@ dependencies = [
 [[package]]
 name = "entropy-protocol"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=master#6464fd4e2ce55a98412bb438cbc5695b5684d635"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=peg%2Fouttie-attestation-logic#96803f639ab11fc1bd9afbb853fccb62bbbb019b"
 dependencies = [
  "async-trait",
  "axum",
@@ -3043,7 +3065,7 @@ dependencies = [
 [[package]]
 name = "entropy-shared"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=master#6464fd4e2ce55a98412bb438cbc5695b5684d635"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=peg%2Fouttie-attestation-logic#96803f639ab11fc1bd9afbb853fccb62bbbb019b"
 dependencies = [
  "blake2",
  "hex-literal 1.0.0",
@@ -3064,7 +3086,7 @@ dependencies = [
 [[package]]
 name = "entropy-testing-utils"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=master#6464fd4e2ce55a98412bb438cbc5695b5684d635"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=peg%2Fouttie-attestation-logic#96803f639ab11fc1bd9afbb853fccb62bbbb019b"
 dependencies = [
  "axum",
  "entropy-kvdb",
@@ -3093,7 +3115,7 @@ dependencies = [
 [[package]]
 name = "entropy-tss"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=master#6464fd4e2ce55a98412bb438cbc5695b5684d635"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=peg%2Fouttie-attestation-logic#96803f639ab11fc1bd9afbb853fccb62bbbb019b"
 dependencies = [
  "anyhow",
  "axum",
@@ -8788,7 +8810,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8a56d757972c98b346a9b766e3f02746cde6dd1cd1d1d563472929fdd74bec4d"
 dependencies = [
  "anyhow",
- "itertools 0.10.5",
+ "itertools 0.13.0",
  "proc-macro2",
  "quote",
  "syn 2.0.101",

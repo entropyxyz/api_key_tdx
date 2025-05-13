@@ -19,11 +19,16 @@ zeroize            ="1.8.1"
 thiserror     ="2.0.12"
 tracing                 ="0.1.41"
 rand_core         ={ version="0.6.4" }
-entropy-protocol={ branch="master", git="https://github.com/entropyxyz/entropy-core", features=["server"] }
-entropy-testing-utils={ branch="master", git="https://github.com/entropyxyz/entropy-core" }
+entropy-protocol={ branch="peg/outtie-attestation-logic", git="https://github.com/entropyxyz/entropy-core", features=["server"] }
+entropy-testing-utils={ branch="peg/outtie-attestation-logic", git="https://github.com/entropyxyz/entropy-core" }
+entropy-client={ branch="peg/outtie-attestation-logic", git="https://github.com/entropyxyz/entropy-core" }
+entropy-shared={ branch="peg/outtie-attestation-logic", git="https://github.com/entropyxyz/entropy-core" }
 reqwest           ={ version="0.12.12", features=["json"] }
 url = "2.5"
 backoff            ={ version="0.4.0", features=["tokio"] }
+rand          ={ version="0.8", default-features=false }
+tdx-quote        ={ version="0.0.3", features=["mock"] }
+configfs-tsm     ={ version="0.0.1", optional=true }
 
 [dev-dependencies]
 serial_test ="3.2.0"
@@ -32,3 +37,5 @@ sp-keyring        ="39.0.0"
 [features]
 default = ["std"]
 std         =["sp-core/std"]
+# Enables non-mock TDX quotes
+production = ["dep:configfs-tsm"]

@@ -22,7 +22,8 @@ async fn test_declare() {
 
     let result = delcare_to_chain(&api, &rpc, server_info, &alice.pair(), None).await;
     // Alice has funds should not time out and register to chain
-    assert!(result.is_ok());
+    result.unwrap();
+    // assert!(result.is_ok());
 }
 
 #[tokio::test]
@@ -39,9 +40,9 @@ async fn test_declare_times_out() {
     };
 
     let result = delcare_to_chain(&api, &rpc, server_info, &pair, None).await;
-    // random pair does not have funds and  should time out
-    assert_eq!(
-        result.unwrap_err().to_string(),
-        "Timed out trying to declare to chain"
-    );
+    // Random pair does not have funds and should give an error
+    assert!(result
+        .unwrap_err()
+        .to_string()
+        .contains("Inability to pay some fees (e.g. account balance too low)"));
 }

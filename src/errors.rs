@@ -36,6 +36,8 @@ pub enum Err {
     TimedOut,
     #[error("Attestation: {0}")]
     Attestation(#[from] crate::attestation::errors::AttestationErr),
+    #[error("Client: {0}")]
+    Client(#[from] entropy_client::ClientError),
 }
 
 impl IntoResponse for Err {

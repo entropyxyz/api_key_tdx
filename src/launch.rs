@@ -1,8 +1,11 @@
 use crate::{attestation::create_quote, errors::Err};
 use backoff::ExponentialBackoff;
-use entropy_client::chain_api::{
-    entropy::{self, runtime_types::pallet_outtie::module::JoiningOuttieServerInfo},
-    EntropyConfig,
+use entropy_client::{
+    chain_api::{
+        entropy::{self, runtime_types::pallet_outtie::module::JoiningOuttieServerInfo},
+        EntropyConfig,
+    },
+    request_attestation,
 };
 use sp_core::{crypto::Ss58Codec, sr25519, Pair};
 use std::time::Duration;
@@ -38,7 +41,7 @@ pub async fn delcare_to_chain(
         ExponentialBackoff::default()
     };
 
-    let nonce = [0; 32]; // TODO
+    let nonce = request_attestation(api, rpc, pair).await?;
     let quote = create_quote(nonce, pair.public().into(), server_info.x25519_public_key).await?;
 
     let add_box_call = entropy::tx().outtie().add_box(server_info, quote);

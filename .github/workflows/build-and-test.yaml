@@ -22,7 +22,7 @@ jobs:
 
       - name: Get entropy binary from latest release
         run: |
-          docker pull entropyxyz/entropy:test-release-outtie-test-02
+          docker pull entropyxyz/entropy:test-release-outtie-test-04
           docker create --name extract-entropy-binary entropyxyz/entropy:test-release-outtie-test-04
           docker cp extract-entropy-binary:/usr/local/bin/entropy ./entropy
           docker container remove extract-entropy-binary

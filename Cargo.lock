@@ -264,6 +264,7 @@ dependencies = [
  "axum",
  "backoff",
  "clap",
+ "entropy-api-key-service-client",
  "entropy-protocol",
  "entropy-testing-utils",
  "rand_core 0.6.4",
@@ -2940,23 +2941,47 @@ dependencies = [
 ]
 
 [[package]]
+name = "entropy-api-key-service-client"
+version = "0.0.1"
+dependencies = [
+ "entropy-client",
+ "entropy-protocol",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "sp-core",
+ "thiserror 2.0.12",
+]
+
+[[package]]
 name = "entropy-client"
 version = "0.4.0-rc.1"
 source = "git+https://github.com/entropyxyz/entropy-core?branch=master#6464fd4e2ce55a98412bb438cbc5695b5684d635"
 dependencies = [
  "anyhow",
+ "base64 0.22.1",
+ "blake2",
+ "entropy-protocol",
  "entropy-shared",
  "futures",
+ "hex",
+ "k256",
  "num",
+ "parity-scale-codec",
  "rand 0.8.5",
+ "rand_core 0.6.4",
+ "reqwest",
  "serde",
+ "serde_json",
  "sha3",
  "sp-core",
  "subxt",
  "subxt-core",
+ "synedrion",
  "thiserror 2.0.12",
  "tokio",
  "tracing",
+ "x25519-dalek",
 ]
 
 [[package]]

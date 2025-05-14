@@ -18,17 +18,17 @@ use crate::{
 use anyhow::anyhow;
 use app_state::{AppState, Configuration};
 use axum::{
-    Router,
     routing::{get, post},
+    Router,
 };
-use chain_api::{
-    entropy::{runtime_types::pallet_outtie::module::OuttieServerInfo},
-};
+use chain_api::entropy::runtime_types::pallet_outtie::module::OuttieServerInfo;
 use clap::Parser;
 use rand_core::OsRng;
-use sp_core::{Pair, sr25519};
+use sp_core::{sr25519, Pair};
 use std::{net::SocketAddr, str::FromStr};
 use x25519_dalek::StaticSecret;
+
+pub use entropy_api_key_service_client::{DeployApiKeyInfo, SendApiKeyMessage};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

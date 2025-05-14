@@ -1,0 +1,19 @@
+[package]
+name = "entropy-api-key-service-client"
+version = "0.0.1"
+edition = "2024"
+authors = ['Entropy Cryptography <engineering@entropy.xyz>']
+homepage = 'https://entropy.xyz/'
+description= 'A client for the Entropy API Key Service'
+license  = 'AGPL-3.0-or-later'
+repository = 'https://github.com/entropyxyz/api_key_tdx'
+
+[dependencies]
+serde = { version="1.0", features=["derive"] }
+serde_json = "1.0"
+reqwest = { version="0.12.12", features=["json"] }
+sp-core = { version="34.0.0", default-features=false }
+thiserror = "2.0.12"
+
+entropy-client={ branch="master", git="https://github.com/entropyxyz/entropy-core", features=["full-client"] }
+entropy-protocol={ branch="master", git="https://github.com/entropyxyz/entropy-core" }

@@ -1,9 +1,7 @@
 use serial_test::serial;
 
-use super::api::{
-    DeployApiKeyInfo, SendApiKeyMessage, TIME_BUFFER, check_stale, get_current_timestamp,
-};
-use crate::test_helpers::setup_client;
+use super::api::{check_stale, get_current_timestamp, TIME_BUFFER};
+use crate::{test_helpers::setup_client, DeployApiKeyInfo, SendApiKeyMessage};
 use entropy_protocol::sign_and_encrypt::EncryptedSignedMessage;
 use sp_core::Pair;
 use sp_keyring::{AccountKeyring, Sr25519Keyring};

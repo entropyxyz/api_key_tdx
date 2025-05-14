@@ -1,3 +1,6 @@
+[workspace]
+members = [".", "client"]
+
 [package]
 name = "api_key_tdx"
 version = "0.1.0"
@@ -24,6 +27,7 @@ entropy-testing-utils={ branch="master", git="https://github.com/entropyxyz/entr
 reqwest           ={ version="0.12.12", features=["json"] }
 url = "2.5"
 backoff            ={ version="0.4.0", features=["tokio"] }
+entropy-api-key-service-client = { version="0.0.1", path="./client" }
 
 [dev-dependencies]
 serial_test ="3.2.0"

@@ -1,27 +1,11 @@
-use crate::{app_state::AppState, errors::Err};
-use axum::{Json, extract::State, http::StatusCode};
+use crate::{app_state::AppState, errors::Err, DeployApiKeyInfo, SendApiKeyMessage};
+use axum::{extract::State, http::StatusCode, Json};
 use entropy_protocol::sign_and_encrypt::EncryptedSignedMessage;
-use serde::{Deserialize, Serialize};
 use std::time::{SystemTime, UNIX_EPOCH};
 use subxt::utils::AccountId32 as SubxtAccountId32;
 
 /// Defines the maximum allowed time difference for an api call in seconds
 pub const TIME_BUFFER: u64 = 20;
-
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
-pub struct DeployApiKeyInfo {
-    pub api_key: String,
-    pub api_url: String,
-    pub timestamp: u64,
-}
-
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
-pub struct SendApiKeyMessage {
-    pub request_body: String,
-    pub http_verb: String,
-    pub api_url: String,
-    pub timestamp: u64,
-}
 
 pub async fn deploy_api_key(
     State(app_state): State<AppState>,

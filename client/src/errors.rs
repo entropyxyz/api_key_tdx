@@ -1,6 +1,7 @@
 use entropy_protocol::sign_and_encrypt::EncryptedSignedMessageErr;
 use thiserror::Error;
 
+/// Error used by the API key service client methods
 #[derive(Debug, Error)]
 pub enum ClientError {
     #[error("Encryption or signing error: {0}")]

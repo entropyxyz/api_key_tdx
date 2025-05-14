@@ -1,3 +1,4 @@
+//! Simple client library for the API Key Service
 pub mod errors;
 pub use entropy_client::chain_api::entropy::runtime_types::pallet_outtie::module::OuttieServerInfo;
 
@@ -7,25 +8,37 @@ use serde::{Deserialize, Serialize};
 use sp_core::sr25519;
 use std::time::{SystemTime, UNIX_EPOCH};
 
+/// Request payload for the `/deploy-api-key` HTTP route
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct DeployApiKeyInfo {
+    /// The secret API key to be deployed
     pub api_key: String,
+    /// URL of the service to use it with
     pub api_url: String,
+    /// Current unix time in seconds
     pub timestamp: u64,
 }
 
+/// Request payload for the `/make-request` HTTP route
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct SendApiKeyMessage {
+    /// Body of the HTTP request
     pub request_body: String,
+    /// The HTTP verb to use
     pub http_verb: String,
+    /// The full URL for the HTTP request
     pub api_url: String,
+    /// Current unix time in seconds
     pub timestamp: u64,
 }
 
 /// Client for API key service
 pub struct ApiKeyServiceClient {
+    /// Details of the service to use
     api_key_service_info: OuttieServerInfo,
+    /// Client for requests
     http_client: reqwest::Client,
+    /// The user's keypair for authentication
     pair: sr25519::Pair,
 }
 
@@ -92,6 +105,7 @@ impl ApiKeyServiceClient {
         Ok(response)
     }
 
+    /// Internal helper to make a request to the service
     async fn send_http_request(
         &self,
         route: String,
@@ -120,6 +134,7 @@ impl ApiKeyServiceClient {
     }
 }
 
+/// Returns the current unix time in seconds
 pub fn get_current_timestamp() -> Result<u64, ClientError> {
     Ok(SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs())
 }

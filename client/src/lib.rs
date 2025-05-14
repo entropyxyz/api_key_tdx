@@ -1,9 +1,7 @@
 pub mod errors;
+pub use entropy_client::chain_api::entropy::runtime_types::pallet_outtie::module::OuttieServerInfo;
 
-use entropy_client::{
-    chain_api::entropy::runtime_types::pallet_outtie::module::OuttieServerInfo,
-    client::EncryptedSignedMessage,
-};
+use entropy_client::client::EncryptedSignedMessage;
 use errors::ClientError;
 use serde::{Deserialize, Serialize};
 use sp_core::sr25519;

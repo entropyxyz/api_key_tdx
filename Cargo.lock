@@ -2945,6 +2945,8 @@ dependencies = [
 name = "entropy-api-key-service-client"
 version = "0.0.1"
 dependencies = [
+ "anyhow",
+ "clap",
  "entropy-client",
  "entropy-protocol",
  "reqwest",
@@ -2952,6 +2954,7 @@ dependencies = [
  "serde_json",
  "sp-core",
  "thiserror 2.0.12",
+ "tokio",
 ]
 
 [[package]]

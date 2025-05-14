@@ -6,7 +6,7 @@ use entropy_client::{
 };
 use errors::ClientError;
 use serde::{Deserialize, Serialize};
-use sp_core::Pair;
+use sp_core::sr25519;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
@@ -28,13 +28,15 @@ pub struct SendApiKeyMessage {
 pub struct ApiKeyServiceClient {
     api_key_service_info: OuttieServerInfo,
     http_client: reqwest::Client,
+    pair: sr25519::Pair,
 }
 
 impl ApiKeyServiceClient {
-    pub fn new(api_key_service_info: OuttieServerInfo) -> Self {
+    pub fn new(api_key_service_info: OuttieServerInfo, pair: sr25519::Pair) -> Self {
         Self {
             api_key_service_info,
             http_client: reqwest::Client::new(),
+            pair,
         }
     }
 
@@ -78,7 +80,7 @@ impl ApiKeyServiceClient {
 
         let send_api_key_message = SendApiKeyMessage {
             request_body,
-            http_verb: request.method().as_str().to_string(),
+            http_verb: request.method().as_str().to_lowercase().to_string(),
             api_url: request.url().as_str().to_string(),
             timestamp: get_current_timestamp()?,
         };
@@ -97,9 +99,8 @@ impl ApiKeyServiceClient {
         route: String,
         request: Vec<u8>,
     ) -> Result<reqwest::Response, ClientError> {
-        let (pair, _) = sp_core::sr25519::Pair::generate();
         let signed_message = EncryptedSignedMessage::new(
-            &pair,
+            &self.pair,
             request,
             &self.api_key_service_info.x25519_public_key,
             &[],

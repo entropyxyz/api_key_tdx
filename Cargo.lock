@@ -265,6 +265,7 @@ dependencies = [
  "backoff",
  "clap",
  "entropy-api-key-service-client",
+ "entropy-client",
  "entropy-protocol",
  "entropy-testing-utils",
  "rand_core 0.6.4",

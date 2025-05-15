@@ -14,11 +14,14 @@ pub struct Cli {
     /// Url of the API key service
     #[arg(
         short = 'u',
-        long = "box-url",
+        long = "url",
         required = false,
         default_value = "127.0.0.1:3001"
     )]
-    pub box_url: String,
+    service_url: String,
+    /// Hex encoded 32 byte x25519 Public key of the server
+    #[arg(short, long)]
+    service_x25519_public_key: String,
     /// Mnemonic or derivation path for keypair
     #[arg(short, long)]
     mnemonic: Option<String>,
@@ -55,10 +58,16 @@ enum CliCommand {
 async fn main() -> anyhow::Result<()> {
     let args = Cli::parse();
 
+    // For test perposes we can also get this from the user or the `/info` endpoint - but in
+    // production this will not give any guarantees that an attestation has been made
+    let x25519_public_key = hex::decode(args.service_x25519_public_key)?
+        .try_into()
+        .map_err(|_| anyhow!("x25519 public key must be 32 bytes"))?;
+
     let client = ApiKeyServiceClient::new(
         OuttieServerInfo {
-            x25519_public_key: [0; 32], // TODO get this internally by hitting the '/info'
-            endpoint: args.box_url.into(),
+            x25519_public_key,
+            endpoint: args.service_url.into(),
         },
         handle_mnemonic(args.mnemonic)?,
     );

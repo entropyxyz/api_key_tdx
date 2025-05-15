@@ -2,11 +2,16 @@
 pub mod errors;
 pub use entropy_client::chain_api::entropy::runtime_types::pallet_outtie::module::OuttieServerInfo;
 
-use entropy_client::client::EncryptedSignedMessage;
+use entropy_client::{
+    chain_api::{entropy, EntropyConfig},
+    client::EncryptedSignedMessage,
+};
 use errors::ClientError;
+use rand::{rngs::StdRng, seq::SliceRandom, SeedableRng};
 use serde::{Deserialize, Serialize};
-use sp_core::sr25519;
+use sp_core::{sr25519, Pair};
 use std::time::{SystemTime, UNIX_EPOCH};
+use subxt::{backend::legacy::LegacyRpcMethods, utils::AccountId32, OnlineClient};
 
 /// Request payload for the `/deploy-api-key` HTTP route
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
@@ -43,12 +48,39 @@ pub struct ApiKeyServiceClient {
 }
 
 impl ApiKeyServiceClient {
+    /// Create a new client with given server details
     pub fn new(api_key_service_info: OuttieServerInfo, pair: sr25519::Pair) -> Self {
         Self {
             api_key_service_info,
             http_client: reqwest::Client::new(),
             pair,
         }
+    }
+
+    /// Create a new client selecting a server from the chain
+    pub async fn select_from_chain(
+        api: &OnlineClient<EntropyConfig>,
+        rpc: &LegacyRpcMethods<EntropyConfig>,
+        pair: sr25519::Pair,
+    ) -> Result<Self, ClientError> {
+        let api_key_servers = get_api_key_servers(api, rpc).await?;
+
+        let mut rng = StdRng::from_seed(pair.public().0);
+        let (_api_key_service_account_id, api_key_service_info) = api_key_servers
+            .choose(&mut rng)
+            .ok_or(ClientError::NoAvailableApiKeyServices)?;
+
+        // TODO derive Clone on OuttieServerInfo so that this manual clone is not needed
+        let api_key_service_info = OuttieServerInfo {
+            x25519_public_key: api_key_service_info.x25519_public_key.clone(),
+            endpoint: api_key_service_info.endpoint.clone(),
+        };
+
+        Ok(Self {
+            api_key_service_info,
+            http_client: reqwest::Client::new(),
+            pair,
+        })
     }
 
     /// Deploy an API key
@@ -137,4 +169,23 @@ impl ApiKeyServiceClient {
 /// Returns the current unix time in seconds
 pub fn get_current_timestamp() -> Result<u64, ClientError> {
     Ok(SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs())
+}
+
+/// Get all available API key servers from the chain
+pub async fn get_api_key_servers(
+    api: &OnlineClient<EntropyConfig>,
+    rpc: &LegacyRpcMethods<EntropyConfig>,
+) -> Result<Vec<(AccountId32, OuttieServerInfo)>, ClientError> {
+    let block_hash = rpc
+        .chain_get_block_hash(None)
+        .await?
+        .ok_or(ClientError::BlockHash)?;
+    let storage_address = entropy::storage().outtie().api_boxes_iter();
+    let mut iter = api.storage().at(block_hash).iter(storage_address).await?;
+    let mut servers = Vec::new();
+    while let Some(Ok(kv)) = iter.next().await {
+        let key: [u8; 32] = kv.key_bytes[kv.key_bytes.len() - 32..].try_into()?;
+        servers.push((key.into(), kv.value))
+    }
+    Ok(servers)
 }

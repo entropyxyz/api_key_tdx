@@ -16,4 +16,12 @@ pub enum ClientError {
     Utf8(#[from] std::string::FromUtf8Error),
     #[error("Http client: {0}")]
     HttpRequest(#[from] reqwest::Error),
+    #[error("Cannot get block hash")]
+    BlockHash,
+    #[error("Substrate error: {0}")]
+    Substrate(#[from] subxt::error::Error),
+    #[error("Cannot parse chain query response: {0}")]
+    TryFromSlice(#[from] std::array::TryFromSliceError),
+    #[error("There are no API Key Services registered on chain")]
+    NoAvailableApiKeyServices,
 }

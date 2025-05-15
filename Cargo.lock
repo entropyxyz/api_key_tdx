@@ -2949,10 +2949,13 @@ dependencies = [
  "clap",
  "entropy-client",
  "entropy-protocol",
+ "hex",
+ "rand 0.8.5",
  "reqwest",
  "serde",
  "serde_json",
  "sp-core",
+ "subxt",
  "thiserror 2.0.12",
  "tokio",
 ]

@@ -4,6 +4,7 @@ pub mod attestation;
 pub mod errors;
 pub mod health;
 pub mod launch;
+pub mod node_info;
 
 #[cfg(test)]
 pub mod test_helpers;
@@ -15,6 +16,7 @@ use crate::{
     api_keys::api::{deploy_api_key, make_request},
     health::api::healthz,
     launch::delcare_to_chain,
+    node_info::api::{info, version},
 };
 use anyhow::anyhow;
 use app_state::{AppState, Configuration};
@@ -83,6 +85,8 @@ pub fn app(app_state: AppState) -> Router {
         .route("/healthz", get(healthz))
         .route("/deploy-api-key", post(deploy_api_key))
         .route("/make-request", post(make_request))
+        .route("/version", get(version))
+        .route("/info", get(info))
         .with_state(app_state);
 
     routes

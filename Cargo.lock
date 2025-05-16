@@ -269,6 +269,7 @@ dependencies = [
  "entropy-protocol",
  "entropy-shared",
  "entropy-testing-utils",
+ "hex",
  "rand 0.8.5",
  "rand_core 0.6.4",
  "reqwest",

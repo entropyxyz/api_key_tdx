@@ -33,7 +33,7 @@ async fn info_test() {
     let app_state = setup_client().await;
     let client = reqwest::Client::new();
     let response = client
-        .get("http://127.0.0.1:3001/v1/info")
+        .get("http://127.0.0.1:3001/info")
         .send()
         .await
         .unwrap();

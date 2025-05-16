@@ -16,8 +16,8 @@ pub struct VersionDetails {
 impl VersionDetails {
     fn new() -> Self {
         Self {
-            cargo_package_version: "foo".to_string(), // env!("CARGO_PKG_VERSION").to_string(),
-            git_tag_commit: "foo".to_string(),        //env!("VERGEN_GIT_DESCRIBE").to_string(),
+            cargo_package_version: env!("CARGO_PKG_VERSION").to_string(),
+            git_tag_commit: env!("VERGEN_GIT_DESCRIBE").to_string(),
             build: BuildDetails::new(),
         }
     }

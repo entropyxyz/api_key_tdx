@@ -34,6 +34,9 @@ configfs-tsm     ={ version="0.0.1", optional=true }
 serial_test ="3.2.0"
 sp-keyring        ="39.0.0"
 
+[build-dependencies]
+vergen={ version="8.3.2", features=["build", "git", "gitcl"] }
+
 [features]
 default = ["std"]
 std         =["sp-core/std"]

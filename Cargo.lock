@@ -265,6 +265,7 @@ dependencies = [
  "backoff",
  "clap",
  "entropy-api-key-service-client",
+ "entropy-api-key-service-shared",
  "entropy-client",
  "entropy-protocol",
  "entropy-testing-utils",
@@ -2947,6 +2948,7 @@ version = "0.0.1"
 dependencies = [
  "anyhow",
  "clap",
+ "entropy-api-key-service-shared",
  "entropy-client",
  "entropy-protocol",
  "hex",
@@ -2958,6 +2960,13 @@ dependencies = [
  "subxt",
  "thiserror 2.0.12",
  "tokio",
+]
+
+[[package]]
+name = "entropy-api-key-service-shared"
+version = "0.0.1"
+dependencies = [
+ "serde",
 ]
 
 [[package]]

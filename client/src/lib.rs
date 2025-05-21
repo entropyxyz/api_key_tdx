@@ -2,40 +2,16 @@
 pub mod errors;
 pub use entropy_client::chain_api::entropy::runtime_types::pallet_outtie::module::OuttieServerInfo;
 
+use entropy_api_key_service_shared::{DeployApiKeyInfo, SendApiKeyMessage};
 use entropy_client::{
     chain_api::{entropy, EntropyConfig},
     client::EncryptedSignedMessage,
 };
 use errors::ClientError;
 use rand::{rngs::StdRng, seq::SliceRandom, SeedableRng};
-use serde::{Deserialize, Serialize};
 use sp_core::{sr25519, Pair};
 use std::time::{SystemTime, UNIX_EPOCH};
 use subxt::{backend::legacy::LegacyRpcMethods, utils::AccountId32, OnlineClient};
-
-/// Request payload for the `/deploy-api-key` HTTP route
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
-pub struct DeployApiKeyInfo {
-    /// The secret API key to be deployed
-    pub api_key: String,
-    /// URL of the service to use it with
-    pub api_url: String,
-    /// Current unix time in seconds
-    pub timestamp: u64,
-}
-
-/// Request payload for the `/make-request` HTTP route
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
-pub struct SendApiKeyMessage {
-    /// Body of the HTTP request
-    pub request_body: String,
-    /// The HTTP verb to use
-    pub http_verb: String,
-    /// The full URL for the HTTP request
-    pub api_url: String,
-    /// Current unix time in seconds
-    pub timestamp: u64,
-}
 
 /// Client for API key service
 pub struct ApiKeyServiceClient {

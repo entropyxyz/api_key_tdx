@@ -1,0 +1,12 @@
+[package]
+name = "entropy-api-key-service-shared"
+version = "0.0.1"
+edition = "2024"
+authors = ['Entropy Cryptography <engineering@entropy.xyz>']
+homepage = 'https://entropy.xyz/'
+description= 'Shared types for the Entropy API Key Service Server and Client'
+license  = 'AGPL-3.0-or-later'
+repository = 'https://github.com/entropyxyz/api_key_tdx'
+
+[dependencies]
+serde = { version="1.0", features=["derive"] }

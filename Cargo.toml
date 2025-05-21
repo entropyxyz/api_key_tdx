@@ -1,5 +1,5 @@
 [workspace]
-members = [".", "client"]
+members = [".", "client", "shared"]
 
 [package]
 name = "api_key_tdx"
@@ -30,11 +30,12 @@ backoff            ={ version="0.4.0", features=["tokio"] }
 entropy-protocol = { branch="master", git="https://github.com/entropyxyz/entropy-core", features=["server"] }
 entropy-client = { branch="master", git="https://github.com/entropyxyz/entropy-core" }
 entropy-testing-utils = { branch="master", git="https://github.com/entropyxyz/entropy-core" }
-entropy-api-key-service-client = { version="0.0.1", path="./client" }
+entropy-api-key-service-shared = { version="0.0.1", path="./shared" }
 
 [dev-dependencies]
 serial_test ="3.2.0"
 sp-keyring        ="39.0.0"
+entropy-api-key-service-client = { version="0.0.1", path="./client" }
 
 [features]
 default = ["std"]

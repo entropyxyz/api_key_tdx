@@ -24,7 +24,6 @@ pub async fn deploy_api_key(
         (request_author.0, user_api_key_info.api_url),
         user_api_key_info.api_key,
     )?;
-    println!("sdkdsjd");
 
     Ok(StatusCode::OK)
 }

@@ -28,7 +28,7 @@ use sp_core::{sr25519, Pair};
 use std::{net::SocketAddr, str::FromStr};
 use x25519_dalek::StaticSecret;
 
-pub use entropy_api_key_service_client::{DeployApiKeyInfo, SendApiKeyMessage};
+pub use entropy_api_key_service_shared::{DeployApiKeyInfo, SendApiKeyMessage};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

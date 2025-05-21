@@ -1,8 +1,7 @@
-use crate::{attestation::get_pck, node_info::errors::GetInfoError, AppState};
+use crate::{attestation::get_pck, errors::Err, AppState};
 use axum::{extract::State, Json};
 use entropy_shared::{BoundedVecEncodedVerifyingKey, X25519PublicKey};
 use serde::{Deserialize, Serialize};
-// use strum::IntoEnumIterator;
 use subxt::utils::AccountId32;
 
 /// Version information - the output of the `/version` HTTP endpoint
@@ -67,9 +66,7 @@ pub struct ServerPublicKeys {
 
 /// Returns the server's public keys
 #[tracing::instrument(skip_all)]
-pub async fn info(
-    State(app_state): State<AppState>,
-) -> Result<Json<ServerPublicKeys>, GetInfoError> {
+pub async fn info(State(app_state): State<AppState>) -> Result<Json<ServerPublicKeys>, Err> {
     Ok(Json(ServerPublicKeys {
         x25519_public_key: app_state.x25519_public_key(),
         account_id: app_state.subxt_account_id(),

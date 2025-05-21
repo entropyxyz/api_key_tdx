@@ -22,8 +22,7 @@ async fn test_declare() {
 
     let result = delcare_to_chain(&api, &rpc, server_info, &alice.pair(), None).await;
     // Alice has funds should not time out and register to chain
-    result.unwrap();
-    // assert!(result.is_ok());
+    assert!(result.is_ok());
 }
 
 #[tokio::test]

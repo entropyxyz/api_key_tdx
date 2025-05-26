@@ -17,8 +17,8 @@ jobs:
             ~/.cargo/git
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Run Check
-        run: cargo check --tests
+      - name: Check production mode compiles
+        run: cargo check -F production
 
       - name: Get entropy binary from latest release
         run: |

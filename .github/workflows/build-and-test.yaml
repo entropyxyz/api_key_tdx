@@ -4,7 +4,7 @@ on: ["push"]
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: core-build-runner
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -22,8 +22,8 @@ jobs:
 
       - name: Get entropy binary from latest release
         run: |
-          docker pull entropyxyz/entropy:test-release-outtie-test-01
-          docker create --name extract-entropy-binary entropyxyz/entropy:test-release-outtie-test-01
+          docker pull entropyxyz/entropy:latest
+          docker create --name extract-entropy-binary entropyxyz/entropy:latest
           docker cp extract-entropy-binary:/usr/local/bin/entropy ./entropy
           docker container remove extract-entropy-binary
 

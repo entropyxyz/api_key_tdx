@@ -1,7 +1,7 @@
 //! Simple CLI for testing the API Key Service
 use anyhow::anyhow;
 use clap::{Parser, Subcommand};
-use entropy_api_key_service_client::{ApiKeyServiceClient, OuttieServerInfo};
+use entropy_api_key_service_client::ApiKeyServiceClient;
 use reqwest::{
     header::{HeaderName, HeaderValue},
     Body, Method, Request, Url,
@@ -65,10 +65,8 @@ async fn main() -> anyhow::Result<()> {
         .map_err(|_| anyhow!("x25519 public key must be 32 bytes"))?;
 
     let client = ApiKeyServiceClient::new(
-        OuttieServerInfo {
-            x25519_public_key,
-            endpoint: args.service_url.into(),
-        },
+        args.service_url,
+        x25519_public_key,
         handle_mnemonic(args.mnemonic)?,
     );
 

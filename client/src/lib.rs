@@ -4,7 +4,10 @@ pub use entropy_client::chain_api::entropy::runtime_types::pallet_outtie::module
 
 use entropy_api_key_service_shared::{DeployApiKeyInfo, SendApiKeyMessage};
 use entropy_client::{
-    chain_api::{entropy, EntropyConfig},
+    chain_api::{
+        entropy::{self, runtime_types::bounded_collections::bounded_vec::BoundedVec},
+        EntropyConfig,
+    },
     client::EncryptedSignedMessage,
 };
 use errors::ClientError;
@@ -50,6 +53,12 @@ impl ApiKeyServiceClient {
         let api_key_service_info = OuttieServerInfo {
             x25519_public_key: api_key_service_info.x25519_public_key.clone(),
             endpoint: api_key_service_info.endpoint.clone(),
+            provisioning_certification_key: BoundedVec(
+                api_key_service_info
+                    .provisioning_certification_key
+                    .0
+                    .clone(),
+            ),
         };
 
         Ok(Self {

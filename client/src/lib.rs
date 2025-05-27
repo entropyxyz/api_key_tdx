@@ -18,8 +18,10 @@ use subxt::{backend::legacy::LegacyRpcMethods, utils::AccountId32, OnlineClient}
 
 /// Client for API key service
 pub struct ApiKeyServiceClient {
-    /// Details of the service to use
-    api_key_service_info: OuttieServerInfo,
+    /// Socket address or hostname of the api key service instance to use
+    api_key_service_endpoint: String,
+    /// X25519 public key of the api key service instance to use
+    api_key_service_x25519_public_key: [u8; 32],
     /// Client for requests
     http_client: reqwest::Client,
     /// The user's keypair for authentication
@@ -28,12 +30,30 @@ pub struct ApiKeyServiceClient {
 
 impl ApiKeyServiceClient {
     /// Create a new client with given server details
-    pub fn new(api_key_service_info: OuttieServerInfo, pair: sr25519::Pair) -> Self {
+    pub fn new(
+        api_key_service_endpoint: String,
+        api_key_service_x25519_public_key: [u8; 32],
+        pair: sr25519::Pair,
+    ) -> Self {
         Self {
-            api_key_service_info,
+            api_key_service_endpoint,
+            api_key_service_x25519_public_key,
             http_client: reqwest::Client::new(),
             pair,
         }
+    }
+
+    /// Create a new client with given server details
+    pub fn new_with_service_info(
+        api_key_service_info: OuttieServerInfo,
+        pair: sr25519::Pair,
+    ) -> Result<Self, ClientError> {
+        Ok(Self {
+            api_key_service_endpoint: String::from_utf8(api_key_service_info.endpoint)?,
+            api_key_service_x25519_public_key: api_key_service_info.x25519_public_key,
+            http_client: reqwest::Client::new(),
+            pair,
+        })
     }
 
     /// Create a new client selecting a server from the chain
@@ -61,11 +81,7 @@ impl ApiKeyServiceClient {
             ),
         };
 
-        Ok(Self {
-            api_key_service_info,
-            http_client: reqwest::Client::new(),
-            pair,
-        })
+        Ok(Self::new_with_service_info(api_key_service_info, pair)?)
     }
 
     /// Deploy an API key
@@ -131,15 +147,11 @@ impl ApiKeyServiceClient {
         let signed_message = EncryptedSignedMessage::new(
             &self.pair,
             request,
-            &self.api_key_service_info.x25519_public_key,
+            &self.api_key_service_x25519_public_key,
             &[],
         )?;
 
-        let full_url = format!(
-            "{}{}",
-            String::from_utf8(self.api_key_service_info.endpoint.clone())?,
-            route
-        );
+        let full_url = format!("{}{}", self.api_key_service_endpoint.clone(), route);
 
         Ok(self
             .http_client

@@ -5,6 +5,11 @@ members = [".", "client", "shared"]
 name = "api_key_tdx"
 version = "0.1.0"
 edition = "2024"
+authors = ['Entropy Cryptography <engineering@entropy.xyz>']
+homepage = 'https://entropy.xyz/'
+description= 'The Entropy API Key Service'
+license  = 'AGPL-3.0-or-later'
+repository = 'https://github.com/entropyxyz/api_key_tdx'
 
 [dependencies]
 tokio  ={ version="1.44", features=["macros", "fs", "rt-multi-thread", "io-util", "process", "sync"] }

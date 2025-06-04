@@ -67,6 +67,35 @@ If each user stores 5 secrets of max 1kb each, with 1kb of ACL data~~, and 1kb o
 
 ## Storage options
 
+The storage discussion that follows is split into two distinct requirements: storage encryption key on the one hand, and state replication on the other.
+
+### Local storage encryption
+
+While we focus on AKS in this document, there is a slight overlap with the TSS, so we briefly discuss both here.
+
+When it comes to encrypted local storage, TSS nodes **must** be able to recover their encryption key on a reboot.
+
+Without such a mechanism, the consequences for the TSS network as a whole range from bad (need to trigger a key re-share) to catastrophic (need to restart the whole network?). For AKS nodes losing access to their local storage the consequences are less dire but given we have to build it for TSS, the same architecture can benefit AKS nodes, enabling them to recover from a reboot.
+
+### State replication
+
+When it comes to state replication the needs for TSS and AKS diverge. For TSS it's not needed at all, but AKS nodes should probably replicate state between them.
+
+**NOTE**: We need a decision on this: to replicate or not to replicate.
+
+If AKS nodes do **not** replicate their state every node is an island. When it goes away so does its data and users must re-upload their secret data. Users have no way of knowing that their selected AKS node is gone so they have to stop what they are doing and fix the problem right away: pick a new AKS node and re-upload their secrets (they should probably revoke the old ones and issue new secrets from their API providers). Users can mitigate this somewhat by selecting multiple AKS nodes to store their secrets (and take care of updating/revoking secrets) but it still puts the onus of managing dissappearing nodes on them.
+
+The scenario where AKS nodes **do** replicate the state between them we need to distinguish two cases:
+
+1. A new AKS joining the network. Requires a full copy of the state.
+1. Users making CRUD changes to state, expecting all nodes to see the changes in a reasonable timeframe (seconds?).
+
+_TODO: work through both cases._
+
+_TODO: find a proper place in the doc for the "assumptions" section._
+
+_TODO: find a proper place in the doc for the storage size paragraph._
+
 ––> Meeting notes, June 4th, 2025
 
 ### Local storage encryption key

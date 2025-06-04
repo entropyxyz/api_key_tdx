@@ -34,6 +34,26 @@ pub enum Err {
     BadEvent(String),
     #[error("Timed out trying to declare to chain")]
     TimedOut,
+    #[error("Client: {0}")]
+    Client(#[from] entropy_client::ClientError),
+    #[error("Input must be 32 bytes: {0}")]
+    TryFromSlice(#[from] std::array::TryFromSliceError),
+    #[error("Substrate: {0}")]
+    SubstrateClient(#[from] entropy_client::substrate::SubstrateError),
+    #[cfg(feature = "production")]
+    #[error("Quote generation: {0}")]
+    QuoteGeneration(String),
+    #[error("Cannot encode verifying key: {0}")]
+    EncodeVerifyingKey(#[from] tdx_quote::VerifyingKeyError),
+    #[error("Verifying key is not 33 bytes long")]
+    BadVerifyingKeyLength,
+    #[error("Attestation request: {0}")]
+    AttestationRequest(#[from] entropy_client::errors::AttestationRequestError),
+    #[error("Invalid or unknown context value given in query string")]
+    UnknownContext,
+    #[cfg(feature = "production")]
+    #[error("Quote parse: {0}")]
+    QuoteParse(#[from] tdx_quote::QuoteParseError),
 }
 
 impl IntoResponse for Err {

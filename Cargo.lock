@@ -264,8 +264,15 @@ dependencies = [
  "axum",
  "backoff",
  "clap",
+ "configfs-tsm",
+ "entropy-api-key-service-client",
+ "entropy-api-key-service-shared",
+ "entropy-client",
  "entropy-protocol",
+ "entropy-shared",
  "entropy-testing-utils",
+ "hex",
+ "rand 0.8.5",
  "rand_core 0.6.4",
  "reqwest",
  "serde",
@@ -276,10 +283,12 @@ dependencies = [
  "sp-keyring",
  "subxt",
  "subxt-core",
+ "tdx-quote",
  "thiserror 2.0.12",
  "tokio",
  "tracing",
  "url",
+ "vergen",
  "x25519-dalek",
  "zeroize",
 ]
@@ -1645,9 +1654,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.5.37"
+version = "4.5.38"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eccb054f56cbd38340b380d4a8e69ef1f02f1af43db2f0cc817a4774d80ae071"
+checksum = "ed93b9805f8ba930df42c2590f05453d5ec36cbb85d018868a5b24d31f6ac000"
 dependencies = [
  "clap_builder",
  "clap_derive",
@@ -1655,9 +1664,9 @@ dependencies = [
 
 [[package]]
 name = "clap_builder"
-version = "4.5.37"
+version = "4.5.38"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "efd9466fac8543255d3b1fcad4762c5e116ffe808c8a3043d4263cd4fd4862a2"
+checksum = "379026ff283facf611b0ea629334361c4211d1b12ee01024eec1591133b04120"
 dependencies = [
  "anstream",
  "anstyle",
@@ -1730,6 +1739,12 @@ checksum = "4ca0197aee26d1ae37445ee532fefce43251d24cc7c166799f4d46817f1d3973"
 dependencies = [
  "crossbeam-utils",
 ]
+
+[[package]]
+name = "configfs-tsm"
+version = "0.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "69e259465c479ea772003ae9e70bcecebefa0e46e0862ffe728edefafc96006b"
 
 [[package]]
 name = "console"
@@ -2940,29 +2955,67 @@ dependencies = [
 ]
 
 [[package]]
-name = "entropy-client"
-version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=master#6464fd4e2ce55a98412bb438cbc5695b5684d635"
+name = "entropy-api-key-service-client"
+version = "0.0.1"
 dependencies = [
  "anyhow",
+ "clap",
+ "entropy-api-key-service-shared",
+ "entropy-client",
+ "entropy-protocol",
+ "hex",
+ "rand 0.8.5",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "sp-core",
+ "subxt",
+ "thiserror 2.0.12",
+ "tokio",
+]
+
+[[package]]
+name = "entropy-api-key-service-shared"
+version = "0.0.1"
+dependencies = [
+ "serde",
+]
+
+[[package]]
+name = "entropy-client"
+version = "0.4.0-rc.1"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=master#87df32d041e07389d7516afbff33ad775cf4cf16"
+dependencies = [
+ "anyhow",
+ "base64 0.22.1",
+ "blake2",
+ "entropy-protocol",
  "entropy-shared",
  "futures",
+ "hex",
+ "k256",
  "num",
+ "parity-scale-codec",
  "rand 0.8.5",
+ "rand_core 0.6.4",
+ "reqwest",
  "serde",
+ "serde_json",
  "sha3",
  "sp-core",
  "subxt",
  "subxt-core",
+ "synedrion",
  "thiserror 2.0.12",
  "tokio",
  "tracing",
+ "x25519-dalek",
 ]
 
 [[package]]
 name = "entropy-kvdb"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=master#6464fd4e2ce55a98412bb438cbc5695b5684d635"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=master#87df32d041e07389d7516afbff33ad775cf4cf16"
 dependencies = [
  "bincode",
  "chacha20poly1305 0.9.1",
@@ -3007,7 +3060,7 @@ dependencies = [
 [[package]]
 name = "entropy-protocol"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=master#6464fd4e2ce55a98412bb438cbc5695b5684d635"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=master#87df32d041e07389d7516afbff33ad775cf4cf16"
 dependencies = [
  "async-trait",
  "axum",
@@ -3043,7 +3096,7 @@ dependencies = [
 [[package]]
 name = "entropy-shared"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=master#6464fd4e2ce55a98412bb438cbc5695b5684d635"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=master#87df32d041e07389d7516afbff33ad775cf4cf16"
 dependencies = [
  "blake2",
  "hex-literal 1.0.0",
@@ -3064,7 +3117,7 @@ dependencies = [
 [[package]]
 name = "entropy-testing-utils"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=master#6464fd4e2ce55a98412bb438cbc5695b5684d635"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=master#87df32d041e07389d7516afbff33ad775cf4cf16"
 dependencies = [
  "axum",
  "entropy-kvdb",
@@ -3093,7 +3146,7 @@ dependencies = [
 [[package]]
 name = "entropy-tss"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=master#6464fd4e2ce55a98412bb438cbc5695b5684d635"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=master#87df32d041e07389d7516afbff33ad775cf4cf16"
 dependencies = [
  "anyhow",
  "axum",
@@ -8788,7 +8841,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8a56d757972c98b346a9b766e3f02746cde6dd1cd1d1d563472929fdd74bec4d"
 dependencies = [
  "anyhow",
- "itertools 0.10.5",
+ "itertools 0.13.0",
  "proc-macro2",
  "quote",
  "syn 2.0.101",
@@ -12422,9 +12475,9 @@ dependencies = [
 
 [[package]]
 name = "tower-http"
-version = "0.6.2"
+version = "0.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "403fa3b783d4b626a8ad51d766ab03cb6d2dbfc46b1c5d4448395e6628dc9697"
+checksum = "0fdb0c213ca27a9f57ab69ddb290fd80d970922355b83ae380b395d3986b8a2e"
 dependencies = [
  "bitflags 2.9.0",
  "bytes",

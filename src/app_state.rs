@@ -1,15 +1,13 @@
-use crate::{
-    chain_api::{EntropyConfig, get_api, get_rpc},
-    errors::Err,
-};
+use crate::errors::Err;
+use entropy_client::chain_api::{get_api, get_rpc, EntropyConfig};
 use serde::Deserialize;
-use sp_core::{Pair, crypto::AccountId32, sr25519};
+use sp_core::{crypto::AccountId32, sr25519, Pair};
 use std::{
     collections::HashMap,
     sync::{Arc, RwLock},
 };
 use subxt::{
-    OnlineClient, backend::legacy::LegacyRpcMethods, utils::AccountId32 as SubxtAccountId32,
+    backend::legacy::LegacyRpcMethods, utils::AccountId32 as SubxtAccountId32, OnlineClient,
 };
 use x25519_dalek::StaticSecret;
 

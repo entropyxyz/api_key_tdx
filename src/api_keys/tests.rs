@@ -1,10 +1,9 @@
 use serial_test::serial;
 
-use super::api::{
-    DeployApiKeyInfo, SendApiKeyMessage, TIME_BUFFER, check_stale, get_current_timestamp,
-};
-use crate::test_helpers::setup_client;
+use super::api::{check_stale, TIME_BUFFER};
+use crate::test_helpers::{make_test_client, setup_client};
 use entropy_protocol::sign_and_encrypt::EncryptedSignedMessage;
+use reqwest::{Body, Method, Url};
 use sp_core::Pair;
 use sp_keyring::{AccountKeyring, Sr25519Keyring};
 
@@ -13,34 +12,23 @@ use sp_keyring::{AccountKeyring, Sr25519Keyring};
 async fn test_deploy_api_key() {
     let app_state = setup_client().await;
     let one = AccountKeyring::One;
-    let box_url_and_key = (
-        "http://127.0.0.1:3001/deploy-api-key".to_string(),
-        app_state.x25519_public_key(),
-    );
-    let user_api_key_info = DeployApiKeyInfo {
-        api_key: "test".to_string(),
-        api_url_base: "test".to_string(),
-        timestamp: get_current_timestamp().unwrap(),
-    };
 
-    let test_deploy_api_key_result = submit_transaction_request(
-        box_url_and_key,
-        serde_json::to_vec(&user_api_key_info.clone()).unwrap(),
-        one,
-    )
-    .await
-    .unwrap();
-    assert_eq!(test_deploy_api_key_result.status(), 200);
+    let api_url_base = "test".to_string();
+    let api_key = "test".to_string();
+
+    let client = make_test_client(&app_state, &one);
+
+    client
+        .deploy_api_key(api_key.clone(), api_url_base.clone())
+        .await
+        .unwrap();
 
     assert_eq!(
         app_state
-            .read_from_api_keys(&(
-                one.pair().public().0,
-                user_api_key_info.clone().api_url_base
-            ))
+            .read_from_api_keys(&(one.pair().public().0, api_url_base))
             .unwrap()
             .unwrap(),
-        user_api_key_info.api_key
+        api_key
     )
 }
 
@@ -49,38 +37,23 @@ async fn test_deploy_api_key() {
 async fn test_make_request_get() {
     let app_state = setup_client().await;
     let one = AccountKeyring::One;
-    let box_url_and_key = (
-        "http://127.0.0.1:3001/make-request".to_string(),
-        app_state.x25519_public_key(),
-    );
     let api_key =
         "live_MdrxblW1YgdnmuI3jVSJNLSqcdljuF3T2PDy26hWXk7fROoojH479EkhrDhYJIy4".to_string();
-    let api_url = "https://api.thecatapi.com".to_string();
-    let api_url_extra =
-        "/v1/images/search?limit=1&breed_ids=beng&api_key=xxxREPLACE_MExxx".to_string();
+    let api_url = Url::parse(
+        "https://api.thecatapi.com").unwrap();
+    let api_url_extra = "/v1/images/search?limit=1&breed_ids=beng&api_key=xxxREPLACE_MExxx".to_string();
 
-    let _ = app_state.write_to_api_keys((one.pair().public().0, api_url.clone()), api_key);
+    let _ = app_state.write_to_api_keys((one.pair().public().0, api_url.to_string()), api_key);
 
-    let user_make_request_info = SendApiKeyMessage {
-        request_body: "test".to_string(),
-        http_verb: "get".to_string(),
-        api_url_base: api_url.clone(),
-        api_url_extra,
-        timestamp: get_current_timestamp().unwrap(),
-    };
+    let client = make_test_client(&app_state, &one);
 
-    let test_deploy_api_key_result = submit_transaction_request(
-        box_url_and_key,
-        serde_json::to_vec(&user_make_request_info.clone()).unwrap(),
-        one,
-    )
-    .await
-    .unwrap();
-    assert_eq!(test_deploy_api_key_result.status(), 200);
-    assert_eq!(
-        &test_deploy_api_key_result.text().await.unwrap()[0..10],
-        "[{\"breeds\""
-    );
+    let mut request = reqwest::Request::new(Method::GET, api_url);
+    let body = request.body_mut();
+    *body = Some(Body::wrap("test".to_string()));
+    let response = client.make_request(request, api_url_extra).await.unwrap();
+
+    assert_eq!(response.status(), 200);
+    assert_eq!(&response.text().await.unwrap()[0..10], "[{\"breeds\"");
 }
 
 #[tokio::test]
@@ -88,36 +61,22 @@ async fn test_make_request_get() {
 async fn test_make_request_get_with_local_test_server() {
     let app_state = setup_client().await;
     let one = AccountKeyring::One;
-    let box_url_and_key = (
-        "http://127.0.0.1:3001/make-request".to_string(),
-        app_state.x25519_public_key(),
-    );
+
     let api_key = "some-secret".to_string();
-    let api_url = "http://127.0.0.1:3002".to_string();
+    let api_url = Url::parse("http://127.0.0.1:3002").unwrap();
     let api_url_extra = "/protected?api-key=xxxREPLACE_MExxx".to_string();
-    let _ = app_state.write_to_api_keys((one.pair().public().0, api_url.clone()), api_key);
 
-    let user_make_request_info = SendApiKeyMessage {
-        request_body: "test".to_string(),
-        http_verb: "get".to_string(),
-        api_url_base: api_url.clone(),
-        api_url_extra,
-        timestamp: get_current_timestamp().unwrap(),
-    };
+    let _ = app_state.write_to_api_keys((one.pair().public().0, api_url.to_string()), api_key);
 
-    let test_deploy_api_key_result = submit_transaction_request(
-        box_url_and_key,
-        serde_json::to_vec(&user_make_request_info.clone()).unwrap(),
-        one,
-    )
-    .await
-    .unwrap();
+    let client = make_test_client(&app_state, &one);
 
-    assert_eq!(test_deploy_api_key_result.status(), 200);
-    assert_eq!(
-        &test_deploy_api_key_result.text().await.unwrap(),
-        "Success response"
-    );
+    let mut request = reqwest::Request::new(Method::GET, api_url);
+    let body = request.body_mut();
+    *body = Some(Body::wrap("test".to_string()));
+    let response = client.make_request(request, api_url_extra).await.unwrap();
+
+    assert_eq!(response.status(), 200);
+    assert_eq!(&response.text().await.unwrap(), "Success response");
 }
 
 // TODO: negative test for deploy key and make request
@@ -137,6 +96,8 @@ async fn test_stale_check() {
     assert_eq!(fail_stale.to_string(), "Message is too old".to_string());
 }
 
+// Allowing dead code here because we probably will use this for negative tests
+#[allow(dead_code)]
 pub async fn submit_transaction_request(
     box_url_and_key: (String, [u8; 32]),
     signature_request: Vec<u8>,

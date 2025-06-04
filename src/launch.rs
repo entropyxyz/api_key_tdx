@@ -1,20 +1,21 @@
-use crate::{
-    chain_api::{
-        EntropyConfig,
-        entropy::{self, runtime_types::pallet_outtie::module::OuttieServerInfo},
-    },
-    errors::Err,
-};
+use crate::{attestation::create_quote, errors::Err};
 use backoff::ExponentialBackoff;
-use sp_core::{Pair, crypto::Ss58Codec, sr25519};
+use entropy_client::{
+    chain_api::{
+        entropy::{self, runtime_types::pallet_outtie::module::JoiningOuttieServerInfo},
+        EntropyConfig,
+    },
+    request_attestation,
+};
+use sp_core::{crypto::Ss58Codec, sr25519, Pair};
 use std::time::Duration;
 use subxt::{
-    Config, OnlineClient,
     backend::legacy::LegacyRpcMethods,
     blocks::ExtrinsicEvents,
     config::DefaultExtrinsicParamsBuilder as Params,
     tx::{Payload, Signer, TxStatus},
-    utils::{AccountId32 as SubxtAccountId32, H256, MultiSignature},
+    utils::{AccountId32 as SubxtAccountId32, MultiSignature, H256},
+    Config, OnlineClient,
 };
 use subxt_core::{storage::address::Address, utils::Yes};
 
@@ -27,7 +28,7 @@ pub const MORTALITY_BLOCKS: u64 = 32;
 pub async fn delcare_to_chain(
     api: &OnlineClient<EntropyConfig>,
     rpc: &LegacyRpcMethods<EntropyConfig>,
-    server_info: OuttieServerInfo,
+    server_info: JoiningOuttieServerInfo,
     pair: &sr25519::Pair,
     nonce_option: Option<u32>,
 ) -> Result<(), Err> {
@@ -39,7 +40,11 @@ pub async fn delcare_to_chain(
     } else {
         ExponentialBackoff::default()
     };
-    let add_box_call = entropy::tx().outtie().add_box(server_info);
+
+    let nonce = request_attestation(api, rpc, pair).await?;
+    let quote = create_quote(nonce, pair.public().into(), server_info.x25519_public_key).await?;
+
+    let add_box_call = entropy::tx().outtie().add_box(server_info, quote);
     let add_box = || async {
         println!(
             "attempted to make add_box tx, If failed probably add funds to {:?}",

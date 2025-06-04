@@ -19,7 +19,7 @@ async fn test_deploy_api_key() {
     );
     let user_api_key_info = DeployApiKeyInfo {
         api_key: "test".to_string(),
-        api_url: "test".to_string(),
+        api_url_base: "test".to_string(),
         timestamp: get_current_timestamp().unwrap(),
     };
 
@@ -34,7 +34,10 @@ async fn test_deploy_api_key() {
 
     assert_eq!(
         app_state
-            .read_from_api_keys(&(one.pair().public().0, user_api_key_info.clone().api_url))
+            .read_from_api_keys(&(
+                one.pair().public().0,
+                user_api_key_info.clone().api_url_base
+            ))
             .unwrap()
             .unwrap(),
         user_api_key_info.api_key
@@ -52,16 +55,16 @@ async fn test_make_request_get() {
     );
     let api_key =
         "live_MdrxblW1YgdnmuI3jVSJNLSqcdljuF3T2PDy26hWXk7fROoojH479EkhrDhYJIy4".to_string();
-    let api_url =
-        "https://api.thecatapi.com".to_string();
-    let api_url_extra = "/v1/images/search?limit=1&breed_ids=beng&api_key=xxxREPLACE_MExxx".to_string();
+    let api_url = "https://api.thecatapi.com".to_string();
+    let api_url_extra =
+        "/v1/images/search?limit=1&breed_ids=beng&api_key=xxxREPLACE_MExxx".to_string();
 
     let _ = app_state.write_to_api_keys((one.pair().public().0, api_url.clone()), api_key);
 
     let user_make_request_info = SendApiKeyMessage {
         request_body: "test".to_string(),
         http_verb: "get".to_string(),
-        api_url: api_url.clone(),
+        api_url_base: api_url.clone(),
         api_url_extra,
         timestamp: get_current_timestamp().unwrap(),
     };
@@ -91,14 +94,14 @@ async fn test_make_request_get_with_local_test_server() {
     );
     let api_key = "some-secret".to_string();
     let api_url = "http://127.0.0.1:3002".to_string();
-    let api_url_base = "/protected?api-key=xxxREPLACE_MExxx".to_string();
+    let api_url_extra = "/protected?api-key=xxxREPLACE_MExxx".to_string();
     let _ = app_state.write_to_api_keys((one.pair().public().0, api_url.clone()), api_key);
 
     let user_make_request_info = SendApiKeyMessage {
         request_body: "test".to_string(),
         http_verb: "get".to_string(),
-        api_url: api_url.clone(),
-        api_url_base,
+        api_url_base: api_url.clone(),
+        api_url_extra,
         timestamp: get_current_timestamp().unwrap(),
     };
 

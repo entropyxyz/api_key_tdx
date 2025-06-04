@@ -68,7 +68,7 @@ pub async fn make_request(
 
     let client = reqwest::Client::new();
     let full_url = format!(
-        "{} {}",
+        "{}{}",
         user_make_request_info.api_url_base, user_make_request_info.api_url_extra
     );
 

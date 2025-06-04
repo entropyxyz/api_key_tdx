@@ -61,12 +61,11 @@ async fn test_make_request_get() {
 async fn test_make_request_get_with_local_test_server() {
     let app_state = setup_client().await;
     let one = AccountKeyring::One;
-
-    let api_key = "some-secret".to_string();
-    let api_url = Url::parse("http://127.0.0.1:3002").unwrap();
+    let api_url_base = "http://127.0.0.1:3002";
     let api_url_extra = "/protected?api-key=xxxREPLACE_MExxx".to_string();
-
-    let _ = app_state.write_to_api_keys((one.pair().public().0, api_url.to_string()), api_key);
+    let api_key = "some-secret".to_string();
+    let api_url = Url::parse(api_url_base).unwrap();
+    let _ = app_state.write_to_api_keys((one.pair().public().0, api_url_base.to_string()), api_key);
 
     let client = make_test_client(&app_state, &one);
 

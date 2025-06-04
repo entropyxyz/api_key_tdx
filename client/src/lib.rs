@@ -125,7 +125,7 @@ impl ApiKeyServiceClient {
         let send_api_key_message = SendApiKeyMessage {
             request_body,
             http_verb: request.method().as_str().to_lowercase().to_string(),
-            api_url_base: request.url().as_str().to_string(),
+            api_url_base: request.url().as_str().to_string().strip_suffix("/").unwrap_or(request.url().as_str()).to_string(),
             api_url_extra,
             timestamp: get_current_timestamp()?,
         };

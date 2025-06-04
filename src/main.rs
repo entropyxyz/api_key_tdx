@@ -21,12 +21,13 @@ use crate::{
 use anyhow::anyhow;
 use app_state::{AppState, Configuration};
 use axum::{
-    routing::{get, post}, Router,
+    Router,
+    routing::{get, post},
 };
 use clap::Parser;
 use entropy_client::chain_api::entropy::runtime_types::pallet_outtie::module::JoiningOuttieServerInfo;
 use rand_core::OsRng;
-use sp_core::{sr25519, Pair};
+use sp_core::{Pair, sr25519};
 use std::{net::SocketAddr, str::FromStr};
 use x25519_dalek::StaticSecret;
 

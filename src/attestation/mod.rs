@@ -1,7 +1,7 @@
 use crate::errors::Err;
 use entropy_shared::{
-    attestation::{QuoteContext, QuoteInputData},
     BoundedVecEncodedVerifyingKey,
+    attestation::{QuoteContext, QuoteInputData},
 };
 use subxt::utils::AccountId32;
 
@@ -13,7 +13,7 @@ pub async fn create_quote(
     x25519_public_key: [u8; 32],
 ) -> Result<Vec<u8>, Err> {
     let context = QuoteContext::OuttieAddBox;
-    use rand::{rngs::StdRng, SeedableRng};
+    use rand::{SeedableRng, rngs::StdRng};
     use rand_core::OsRng;
 
     // In the real thing this is the key used in the quoting enclave
@@ -80,7 +80,7 @@ pub fn get_pck(_account_id: AccountId32) -> Result<BoundedVecEncodedVerifyingKey
 /// In mock mode, this is derived from the TSS account ID
 #[cfg(not(feature = "production"))]
 pub fn get_pck(account_id: AccountId32) -> Result<BoundedVecEncodedVerifyingKey, Err> {
-    use rand::{rngs::StdRng, SeedableRng};
+    use rand::{SeedableRng, rngs::StdRng};
 
     // This is generated deterministically from account id
     let mut pck_seeder = StdRng::from_seed(account_id.0);

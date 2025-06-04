@@ -1,6 +1,6 @@
 use serial_test::serial;
 
-use super::api::{check_stale, TIME_BUFFER};
+use super::api::{TIME_BUFFER, check_stale};
 use crate::test_helpers::{make_test_client, setup_client};
 use entropy_protocol::sign_and_encrypt::EncryptedSignedMessage;
 use reqwest::{Body, Method, Url};
@@ -37,13 +37,14 @@ async fn test_deploy_api_key() {
 async fn test_make_request_get() {
     let app_state = setup_client().await;
     let one = AccountKeyring::One;
+    let api_url_base = "https://api.thecatapi.com";
     let api_key =
         "live_MdrxblW1YgdnmuI3jVSJNLSqcdljuF3T2PDy26hWXk7fROoojH479EkhrDhYJIy4".to_string();
-    let api_url = Url::parse(
-        "https://api.thecatapi.com").unwrap();
-    let api_url_extra = "/v1/images/search?limit=1&breed_ids=beng&api_key=xxxREPLACE_MExxx".to_string();
+    let api_url = Url::parse(api_url_base).unwrap();
+    let api_url_extra =
+        "/v1/images/search?limit=1&breed_ids=beng&api_key=xxxREPLACE_MExxx".to_string();
 
-    let _ = app_state.write_to_api_keys((one.pair().public().0, api_url.to_string()), api_key);
+    let _ = app_state.write_to_api_keys((one.pair().public().0, api_url_base.to_string()), api_key);
 
     let client = make_test_client(&app_state, &one);
 

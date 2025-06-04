@@ -1,5 +1,5 @@
-use crate::{attestation::get_pck, errors::Err, AppState};
-use axum::{extract::State, Json};
+use crate::{AppState, attestation::get_pck, errors::Err};
+use axum::{Json, extract::State};
 use entropy_shared::{BoundedVecEncodedVerifyingKey, X25519PublicKey};
 use serde::{Deserialize, Serialize};
 use subxt::utils::AccountId32;

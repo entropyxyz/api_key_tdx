@@ -49,8 +49,10 @@ async fn test_declare_times_out() {
 
     let result = delcare_to_chain(&api, &rpc, server_info, &pair, None).await;
     // Random pair does not have funds and should give an error
-    assert!(result
-        .unwrap_err()
-        .to_string()
-        .contains("Inability to pay some fees (e.g. account balance too low)"));
+    assert!(
+        result
+            .unwrap_err()
+            .to_string()
+            .contains("Inability to pay some fees (e.g. account balance too low)")
+    );
 }

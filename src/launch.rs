@@ -22,7 +22,7 @@ use subxt_core::{storage::address::Address, utils::Yes};
 pub const MORTALITY_BLOCKS: u64 = 32;
 
 /// Declares an itself to the chain by calling add box to the outtie pallet
-/// Will log and backoff if account does not have funds, assumption is that 
+/// Will log and backoff if account does not have funds, assumption is that
 /// deployer will see this and fund the account to complete the spin up process
 pub async fn delcare_to_chain(
     api: &OnlineClient<EntropyConfig>,

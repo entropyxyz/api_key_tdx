@@ -21,9 +21,7 @@ use axum::{
     Router,
     routing::{get, post},
 };
-use chain_api::{
-    entropy::{runtime_types::pallet_outtie::module::OuttieServerInfo},
-};
+use chain_api::entropy::runtime_types::pallet_outtie::module::OuttieServerInfo;
 use clap::Parser;
 use rand_core::OsRng;
 use sp_core::{Pair, sr25519};

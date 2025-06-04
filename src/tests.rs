@@ -4,10 +4,10 @@ use crate::{
     },
     launch::delcare_to_chain,
 };
-use entropy_testing_utils::{substrate_context::test_node_process};
+use entropy_testing_utils::substrate_context::test_node_process;
 use serial_test::serial;
-use sp_keyring::AccountKeyring;
 use sp_core::{Pair, sr25519};
+use sp_keyring::AccountKeyring;
 
 #[tokio::test]
 #[serial]
@@ -22,8 +22,7 @@ async fn test_declare() {
         x25519_public_key: [0u8; 32],
     };
 
-    let result = delcare_to_chain(&api, &rpc, server_info, &alice.pair(), None)
-        .await;
+    let result = delcare_to_chain(&api, &rpc, server_info, &alice.pair(), None).await;
     // Alice has funds should not time out and register to chain
     assert!(result.is_ok());
 }
@@ -41,8 +40,10 @@ async fn test_declare_times_out() {
         x25519_public_key: [0u8; 32],
     };
 
-    let result = delcare_to_chain(&api, &rpc, server_info, &pair, None)
-        .await;
+    let result = delcare_to_chain(&api, &rpc, server_info, &pair, None).await;
     // random pair does not have funds and  should time out
-    assert_eq!(result.unwrap_err().to_string(), "Timed out trying to declare to chain");
+    assert_eq!(
+        result.unwrap_err().to_string(),
+        "Timed out trying to declare to chain"
+    );
 }

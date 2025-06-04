@@ -17,11 +17,21 @@ The API Key Service ("AKS" below) has two jobs:
 1. Manage storage of secret user data, e.g. API keys.
 1. Execute remote API calls on behalf of users, using their secrets to authenticate the requests, and return the results to the users.
 
+### Assumptions
+
+To be clear about what the underlying assumptions are for the design outline that ensues, we list them here:
+
+- Tens of AKS nodes; certainly not thousands.
+- Thousands of users, not millions.
+- Full state is tens of megabytes, not gigabytes
+- AKS nodes are incentivized. We assume most of them will do their best to stay available and do the work.
+- Permissionless. AKS nodes will come and go willy nilly and there is no central authority that knows who they are or how reliable they are.
+
 ## Secret data CRUD
 
 Anyone on the internet can query the blockchain for the public key and hostname of an AKS node. Using this information they can establish a secure connection to the AKS node. The untrusted host running the CVM cannot MITM this connection.
 
-_TODO: Spell out the reasons why this is secure and how it works in detail, e.g. how the CVM attestation is verified by the user, why this on-chain pubkey registry is sane and what the difference is between this setup and standard TLS certs. I guess the question is: what does the blockchain do for us here?_
+_TODO: Spell out the reasons why this is secure and how it works in detail, e.g. how the CVM attestation is verified by the user, why this on-chain pubkey registry is sane and what the difference is between this setup and standard TLS certs. I guess the deeper question is: what does the blockchain do for us here?_
 
 ~~The blockchain has privileged access (encrypted and authenticated) to a small set of RPC endpoints that allows validator nodes to send secrets, e.g. API keys, on user's behalf to the CVMs running the `entropy-aks` daemon ("AKS" for short). The secret data submitted by users is encrypted in-flight and opaque to validators and the on-chain transaction data cannot be decrypted/inspected. Secrets only ever reside inside the CVM, running in the TDX enclave.~~
 
@@ -36,19 +46,23 @@ The relevant RPC endpoints exposed by the AKS are:
 - `DELETE /secret?id`: deletes the secret with secret_id `id`.
 - `GET /make-request?id=&remote-url=&verb=&payload=`: instructs the AKS to make a remote API call to `remote-url` using the http verb `verb` and the secret matching the `id` to send the payload in `payload`.
 
+*NOTE*: `secret_id`s should be unique and **random**, given that knowledge of a `secret_id` allows anyone to make remote API calls on behalf of the user.
+
 _TODO: Use correct endpoints, from the spec doc._
+
 _TODO: Describe the ACL format and how it works in detail._
+
 _TODO: Can users provide any `remote-url` like this or is it limited to a set of whitelisted URLs? Stored where? In the ACL? Or separate?_
 
 ~~All calls to the AKS from the outside are signed and contain counter measures to replay attacks (likely a block number and/or a random nonce). The API responses are encrypted to the end user's public key before they are send back outside the AKS.~~
 
 _TODO: None of the above is correct I believe?_
 
-All calls to the AKS contain counter measures to replay attacks.
+All calls to the AKS contain counter measures to replay attacks, to stop a snooping cloud operator from recording traffic and replaying it at will. *TODO: spec counter measures in detail.*
 
 _TODO: Spec the replay attack counter measures in detail. Given this all happens outside the chain, using the block number is pointless._
 
-**NOTE:** This document does not discuss the fact that end users still must do local key management and keep track of their `secret_id`s. A stolen `secret_id` can be used by anyone to execute remote API calls, so it's essentially equivalent to stealing the API key in the first place. That is an important matter worthy of its own separate discussion.
+**NOTE:** Users must do local key management and keep track of their `secret_id`s. A stolen `secret_id` can be used by anyone to execute remote API calls, so it's essentially equivalent to stealing the API key in the first place. That is an important matter worthy of its own separate discussion.
 
 ## What do AKS nodes store?
 
@@ -67,11 +81,11 @@ If each user stores 5 secrets of max 1kb each, with 1kb of ACL data~~, and 1kb o
 
 ## Storage options
 
-The storage discussion that follows is split into two distinct requirements: storage encryption key on the one hand, and state replication on the other.
+The storage discussion that follows is split into two distinct requirements: the local storage encryption key on the one hand; and state replication on the other.
 
 ### Local storage encryption
 
-While we focus on AKS in this document, there is a slight overlap with the TSS, so we briefly discuss both here.
+While we focus on AKS in this document, there is a slight overlap with the TSS; we briefly discuss both here.
 
 When it comes to encrypted local storage, TSS nodes **must** be able to recover their encryption key on a reboot.
 
@@ -85,16 +99,31 @@ When it comes to state replication the needs for TSS and AKS diverge. For TSS it
 
 If AKS nodes do **not** replicate their state every node is an island. When it goes away so does its data and users must re-upload their secret data. Users have no way of knowing that their selected AKS node is gone so they have to stop what they are doing and fix the problem right away: pick a new AKS node and re-upload their secrets (they should probably revoke the old ones and issue new secrets from their API providers). Users can mitigate this somewhat by selecting multiple AKS nodes to store their secrets (and take care of updating/revoking secrets) but it still puts the onus of managing dissappearing nodes on them.
 
-The scenario where AKS nodes **do** replicate the state between them we need to distinguish two cases:
+In the scenario where AKS nodes **do** replicate the state between them we need to distinguish two cases:
 
 1. A new AKS joining the network. Requires a full copy of the state.
 1. Users making CRUD changes to state, expecting all nodes to see the changes in a reasonable timeframe (seconds?).
 
-_TODO: work through both cases._
+*TODO: Given AKS nodes replicate their state, is it still useful for AKS nodes to encrypt their local storage with a unique key? You break one, you get the full state and all user secrets. Why not use the same key then?*
 
-_TODO: find a proper place in the doc for the "assumptions" section._
+#### New AKS node joining the network
 
-_TODO: find a proper place in the doc for the storage size paragraph._
+Flow outline:
+- Register on the blockchain as a new AKS node. *TODO: spec this in detail.*
+- Ask the blockchain for a list of known AKS nodes.
+- Pick `max(3, total_nodes)` and query them for a hash of their state.
+- Compare the hashes received and if they match, pick one of the nodes and request a full copy of its state.
+- Download&validate the state copy *TODO: what kind of validation is required here?*
+- Confident that any new state can be reconciled with the state copy it downloaded, the new AKS node joins the state replication protocol and receives the last updates.
+- Once in sync, it lets the blockchain know that it's `READY`
+- Start accepting user requests and propagate own state changes to the other nodes.
+
+A rebooting AKS node is not too different from a new node. It must re-register on the blockchain (the node cannot know how long it has been gone for, perhaps the blockchain deleted it) and even if it probably has a decently recent copy of the state on its local disk, it must still query the other nodes to know how far behind it is. Given the small size of the state it is likely easier to simply treat a re-booting AKS node as a new node.
+
+### State change propagation
+
+_TODO: This is pretty tricky, not sure I can wing a write-up of a decent state change propagation protocol._
+
 
 ––> Meeting notes, June 4th, 2025
 

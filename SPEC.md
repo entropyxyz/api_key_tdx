@@ -44,7 +44,7 @@ The relevant RPC endpoints exposed by the AKS are:
 - `POST /deploy-api-key`: adds a new secret.  This is associated with a given URL of the service it is for, and the public key of the user who signs the request body.
 - `PUT /secret?id=&data=&acl`: updates the secret and/or ACL with secret_id `id`.
 - `DELETE /secret?id`: deletes the secret with secret_id `id`.
-- `GET /make-request?id=&remote-url=&verb=&payload=`: instructs the AKS to make a remote API call to `remote-url` using the http verb `verb` and the secret matching the `id` to send the payload in `payload`.
+- `POST /make-request`: instructs the AKS to make a remote API call to `remote-url` using the http verb `verb` and the secret matching the public key used to sign the request payload.
 
 *NOTE*: `secret_id`s should be unique and **random**, given that knowledge of a `secret_id` allows anyone to make remote API calls on behalf of the user.
 

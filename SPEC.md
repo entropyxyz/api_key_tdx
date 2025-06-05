@@ -106,48 +106,16 @@ A rebooting AKS node is not too different from a new node. It must re-register o
 
 ### State change propagation
 
-_TODO: This is pretty tricky, not sure I can wing a write-up of a decent state change propagation protocol._
+State change syncronization is a big topic and there are many solutions out there, varying greatly in complexity and safety/resilience guarantees offered. What we suggest here is a sketch of "the simplest thing that can work".
 
-––> Meeting notes, June 4th, 2025
+- Use a "XOR proximity" metric to assign "neighbours" to AKS nodes; each AKS node tries to find `n` such neighbours, where `n` is a system parameter choosen to work well with the actual/expected number of AKS nodes.
+- The lookup key is the hash of the `secret` + `pubkey` + `baseURL` (and possibly the `ACL` as well, TBD)
+- When users look for an AKS node to deploy a secret to, they calculate the lookup key and choose the AKS node that is "closest".
+- AKS nodes propagate own state updates to its `n` closest neighbours.
+- AKS nodes propagate state updates received from other AKS nodes to `n-1` neighbours (i.e. to all except the one they received the update from)
+- Eventually all nodes will have received the update and stop propagating it.
 
-### Local storage encryption key
-
-- TSS **must** a way to recover the storage key
-- AKS **may** benefit from a recovery feature
-
-### Replication
-
-#### Assumptions
-
-- tens of AKS nodes, certainly not thousands
-- thousands of users, not millions
-- full state is tens of megabytes, not gigabytes
-- AKS nodes are incentivized and we assume that most of them will do their best to stay up and do the work
-- AKS nodes will come and go willy nilly and there is no central authority that knows who they are or how reliable they are
-
-- TSS **may** be useful? For some data but definitely **not** for key shares!
-- AKS **should** be replicated
-  - Actually: replication for AKS is not required given that the secrets stored all have their own repudiation/replacement mechanism from the secret issue (e.g. you can go to Coinbase and get a new key), so an AKS node going down and/or dissapearing is not catastrophic.
-  - If however the team feels replication is a must then here we do it:
-    - TODO: describe how to do it
-    - Nodes joining: they need a full copy of the state
-    - Users adding/changing data: how do changes propagate to other nodes?
-    - Best would be an out-of-the-box solution that can
-      1.  runs in TDX
-      1.  small overhead
-      1.  multi-master replication ready
-      1.  is this Redis? is this SQLITE + something? Is it Postgres? Is it some nifty pubsub solution? RESEARCH topic
-    - …if no such ready made solution can be found we suggest:
-      1.  AKS stores data in an append-only file (encrypted)
-      1.  on request (by new nodes), provide full snapshots of local storage
-      1.  changes to existing data are gossiped as they happen
-      1.  implement automatic merging of changes
-
-Replication for AKS is probably a bit easier to implement if we can rely on a secret key storage solution like SGX Seal API, but does not require it.
-
-### SGX Sealing API as a keyserver for AKS/TSS
-
-–––> END Meeting notes, June 4th, 2025
+_TODO: Not convinced that the above is actually the simplest possible protocol that can work!_
 
 _TODO: From here on out, most of the text is probably incorrect as I was assuming some sort of replication was planned._
 
@@ -214,3 +182,44 @@ In conclusion we have the following requirements:
   - Do all AKS nodes need to store all the secrets?
     - Yes, because the service needs to be able to scale and the secrets need to be replicated. Also: what is even the point of the AKS service if it's not decentralized, censorship resistant and available?
     - No, because the service can scale by adding more AKS nodes and manually sharding the secrets among them. When nodes die or are upgraded, users have to manually re-upload their secrets.
+
+# Meeting notes
+
+## June 4th, 2025
+
+### Local storage encryption key
+
+- TSS **must** a way to recover the storage key
+- AKS **may** benefit from a recovery feature
+
+### Assumptions
+
+- tens of AKS nodes, certainly not thousands
+- thousands of users, not millions
+- full state is tens of megabytes, not gigabytes
+- AKS nodes are incentivized and we assume that most of them will do their best to stay up and do the work
+- AKS nodes will come and go willy nilly and there is no central authority that knows who they are or how reliable they are
+
+### Replication
+
+- TSS **may** be useful? For some data but definitely **not** for key shares!
+- AKS **should** be replicated
+  - Actually: replication for AKS is not required given that the secrets stored all have their own repudiation/replacement mechanism from the secret issue (e.g. you can go to Coinbase and get a new key), so an AKS node going down and/or dissapearing is not catastrophic.
+  - If however the team feels replication is a must then here we do it:
+    - TODO: describe how to do it
+    - Nodes joining: they need a full copy of the state
+    - Users adding/changing data: how do changes propagate to other nodes?
+    - Best would be an out-of-the-box solution that can
+      1.  runs in TDX
+      1.  small overhead
+      1.  multi-master replication ready
+      1.  is this Redis? is this SQLITE + something? Is it Postgres? Is it some nifty pubsub solution? RESEARCH topic
+    - …if no such ready made solution can be found we suggest:
+      1.  AKS stores data in an append-only file (encrypted)
+      1.  on request (by new nodes), provide full snapshots of local storage
+      1.  changes to existing data are gossiped as they happen
+      1.  implement automatic merging of changes
+
+Replication for AKS is probably a bit easier to implement if we can rely on a secret key storage solution like SGX Seal API, but does not require it.
+
+### SGX Sealing API as a keyserver for AKS/TSS

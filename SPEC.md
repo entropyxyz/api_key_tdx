@@ -10,7 +10,7 @@ The AKS nodes are also attested and the blockchain API/on-chain registry can be 
 
 The software composing the CVM for both TSS and AKS is defined ahead of time as a raw disk image and contains a minimal linux build (x86). Beyond basic OS services like networking, the CVM runs `entropy-tss` or `entropy-aks`.
 
-_TODO: Loop back to this section and describe how TSS and AKS interact (if they do)._
+_TODO: Loop back to this section and describe how the Entropy chain, TSS and AKS interact especially wrt to attestations, fees, RPC-APIs etc._
 
 The API Key Service ("AKS" below) has two jobs:
 
@@ -31,53 +31,36 @@ To be clear about what the underlying assumptions are for the design outline tha
 
 Anyone on the internet can query the blockchain for the public key and hostname of an AKS node. Using this information they can establish a secure connection to the AKS node. The untrusted host running the CVM cannot MITM this connection.
 
-_TODO: Spell out the reasons why this is secure and how it works in detail, e.g. how the CVM attestation is verified by the user, why this on-chain pubkey registry is sane and what the difference is between this setup and standard TLS certs. I guess the deeper question is: what does the blockchain do for us here?_
+_TODO: Spell out the reasons why this is secure and how it works in detail, e.g. how is the CVM attestation is verified by the user?, why this on-chain pubkey registry is sane, how it's kept up to date and what the difference is between this setup and standard TLS certs._
 
-~~The blockchain has privileged access (encrypted and authenticated) to a small set of RPC endpoints that allows validator nodes to send secrets, e.g. API keys, on user's behalf to the CVMs running the `entropy-aks` daemon ("AKS" for short). The secret data submitted by users is encrypted in-flight and opaque to validators and the on-chain transaction data cannot be decrypted/inspected. Secrets only ever reside inside the CVM, running in the TDX enclave.~~
-
-Users submit and query data to/from the AKS nodes using standard http requests with encrypted payloads.
-
-_TODO: HTTP requests? Or websockets? Or either? The untrusted cloud operator can inspect the traffic of course, and can spy on metdata (like user's IP). Or how does this work? Is the client-to-AKS transport mechanism specc'd somewhere?_
+Users submit and query data to/from the AKS nodes using standard HTTP POST requests with encrypted and signed payloads (encrypted under the AKS node's public key and signed by the user's private key). The untrusted host executing the CVM is assumed to be able to spy on the traffic and manipulate all data going to and from the AKS node inside the CVM, but has no way to decrypt the payload.
 
 The relevant RPC endpoints exposed by the AKS are:
 
-- `POST /deploy-api-key`: adds a new secret.  This is associated with a given URL of the service it is for, and the public key of the user who signs the request body.
-- `PUT /secret?id=&data=&acl`: updates the secret and/or ACL with secret_id `id`.
-- `DELETE /secret?id`: deletes the secret with secret_id `id`.
-- `POST /make-request`: instructs the AKS to make a remote API call to `remote-url` using the http verb `verb` and the secret matching the public key used to sign the request payload.
+- `/deploy-api-key`: adds a new secret. This is associated with a given base URL of the service it is for, and the public key of the user who signs the request body. The base URL + user's pubkey constitutes the identifier for the secret.
+- `/update-secret`: updates the secret and/or ACL with secret*id `id` (\_Note: not implemented yet*).
+- `/delete-secret`: deletes the secret with secret*id `id` (\_Note: not implemented yet*).
+- `/make-request`: instructs the AKS to make a remote API call to `remote-url` using the http verb `verb`, with optional POST/PUT payload `payload` and the secret matching the public key used to sign the request payload; the secret is identified by the base URL (extracted from `remote-url`) + user's public key.
 
-*NOTE*: `secret_id`s should be unique and **random**, given that knowledge of a `secret_id` allows anyone to make remote API calls on behalf of the user.
+**Note:** There are two aspects of ACLs. Firstly, the "ACL proper" that defines which users' public keys are allowed to use a secret; secondly the "usage ACL", defining how a secret can be used, e.g. "only for amounts smaller than `x`" or "only between 10am and 4pm". The full spec of how this works is out of scope for this document.\_
 
-_TODO: Use correct endpoints, from the spec doc._
+All calls to the AKS from the outside are signed and contain counter measures to replay attacks to stop a snooping cloud operator from recording traffic and replaying it at will. The API responses are encrypted to the end user's public key before they are sent back outside the AKS.
 
-_TODO: Describe the ACL format and how it works in detail._
+_TODO: Spec the encryption and replay attack counter-measures. This most likley means "Just use TLS"._
 
-_TODO: Can users provide any `remote-url` like this or is it limited to a set of whitelisted URLs? Stored where? In the ACL? Or separate?_
-
-~~All calls to the AKS from the outside are signed and contain counter measures to replay attacks (likely a block number and/or a random nonce). The API responses are encrypted to the end user's public key before they are send back outside the AKS.~~
-
-_TODO: None of the above is correct I believe?_
-
-All calls to the AKS contain counter measures to replay attacks, to stop a snooping cloud operator from recording traffic and replaying it at will. *TODO: spec counter measures in detail.*
-
-_TODO: Spec the replay attack counter measures in detail. Given this all happens outside the chain, using the block number is pointless._
-
-**NOTE:** Users must do local key management and keep track of their `secret_id`s. A stolen `secret_id` can be used by anyone to execute remote API calls, so it's essentially equivalent to stealing the API key in the first place. That is an important matter worthy of its own separate discussion.
+**NOTE:** Users must do local key management and keep track of their secret signing key. A stolen secret key can be used by anyone to execute remote API calls, so it's essentially equivalent to stealing the API key in the first place. That is an important matter worthy of its own separate discussion.
 
 ## What do AKS nodes store?
 
 To support the above scenario, the AKS nodes must keep the following data:
 
-- User secrets
-- User ACL, one for each remote rpc
-- ~~Users public keys~~
-- ~~List of current validators, i.e. the set of outside nodes allowed to do secrets CRUD and their public keys.~~
+- User secrets + base URL
+- User ACL, one for each secret
+- Users public keys
 - Pending requests and responses.
-- Additional bobs and bits, e.g. errors~~, info about next epoch, current time and current block number~~.
+- Additional bobs and bits, e.g. errors, logs.
 
-If each user stores 5 secrets of max 1kb each, with 1kb of ACL data~~, and 1kb of public key data~~, we have ~10Kb per user, so supporting 1000 users/node requires ~10Mb of memory/storage. When there are network problems and the AKS cannot reach the remote services, the storage needs for pending requests/responses could spike significantly. A rate limiting feature will eventually become essential.
-
-~~Secrets, ACLs, public keys and epoch info must be replicated to all AKS nodes so that they can all process user requests and ensure resiliance and availability.~~
+If each user stores 5 secrets of max 1kb each, with 1kb of ACL data, and 1kb of public key data, we have ~15Kb per user, so supporting 1000 users/node requires ~15Mb of memory/storage. When there are network problems and the AKS cannot reach the remote services, the storage needs for pending requests/responses could spike significantly. A rate limiting feature will eventually become essential.
 
 ## Storage options
 
@@ -104,16 +87,17 @@ In the scenario where AKS nodes **do** replicate the state between them we need 
 1. A new AKS joining the network. Requires a full copy of the state.
 1. Users making CRUD changes to state, expecting all nodes to see the changes in a reasonable timeframe (seconds?).
 
-*TODO: Given AKS nodes replicate their state, is it still useful for AKS nodes to encrypt their local storage with a unique key? You break one, you get the full state and all user secrets. Why not use the same key then?*
+_TODO: Given AKS nodes replicate their state, is it still useful for AKS nodes to encrypt their local storage with a unique key? You break one, you get the full state and all user secrets. Why not use the same key then?_
 
 #### New AKS node joining the network
 
 Flow outline:
-- Register on the blockchain as a new AKS node. *TODO: spec this in detail.*
+
+- Register on the blockchain as a new AKS node. _TODO: spec this in detail._
 - Ask the blockchain for a list of known AKS nodes.
 - Pick `max(3, total_nodes)` and query them for a hash of their state.
 - Compare the hashes received and if they match, pick one of the nodes and request a full copy of its state.
-- Download&validate the state copy *TODO: what kind of validation is required here?*
+- Download&validate the state copy _TODO: what kind of validation is required here?_
 - Confident that any new state can be reconciled with the state copy it downloaded, the new AKS node joins the state replication protocol and receives the last updates.
 - Once in sync, it lets the blockchain know that it's `READY`
 - Start accepting user requests and propagate own state changes to the other nodes.
@@ -123,7 +107,6 @@ A rebooting AKS node is not too different from a new node. It must re-register o
 ### State change propagation
 
 _TODO: This is pretty tricky, not sure I can wing a write-up of a decent state change propagation protocol._
-
 
 ––> Meeting notes, June 4th, 2025
 

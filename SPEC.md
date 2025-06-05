@@ -62,17 +62,9 @@ To support the above scenario, the AKS nodes must keep the following data:
 
 If each user stores 5 secrets of max 1kb each, with 1kb of ACL data, and 1kb of public key data, we have ~15Kb per user, so supporting 1000 users/node requires ~15Mb of memory/storage. When there are network problems and the AKS cannot reach the remote services, the storage needs for pending requests/responses could spike significantly. A rate limiting feature will eventually become essential.
 
-## Storage options
+## State storage
 
 The storage discussion that follows is split into two distinct requirements: the local storage encryption key on the one hand; and state replication on the other.
-
-### Local storage encryption
-
-While we focus on AKS in this document, there is a slight overlap with the TSS; we briefly discuss both here.
-
-When it comes to encrypted local storage, TSS nodes **must** be able to recover their encryption key on a reboot.
-
-Without such a mechanism, the consequences for the TSS network as a whole range from bad (need to trigger a key re-share) to catastrophic (need to restart the whole network?). For AKS nodes losing access to their local storage the consequences are less dire but given we have to build it for TSS, the same architecture can benefit AKS nodes, enabling them to recover from a reboot.
 
 ### State replication
 
@@ -117,68 +109,58 @@ State change syncronization is a big topic and there are many solutions out ther
 
 _TODO: Not convinced that the above is actually the simplest possible protocol that can work!_
 
-_TODO: From here on out, most of the text is probably incorrect as I was assuming some sort of replication was planned._
+## Local storage
 
-The amount of data stored is so small that the most performant implementation is to simply store everything in memory and implement a periodical checkpointing mechanism to save the data to disk.
+An AKS node needs local storage for two reasons:
+
+1. To recover quickly after a reboot. If its own state turns out to be recent, it might be able to sync up with the other nodes with just a few messages.
+1. Store ephemeral data about in-flight requests that would be pointless to gossip to other AKS nodes. Consider an AKS node that has successfully executed a request to a remote service ("hey Coinbase, close my account and send all the coins to 0xDEADBEEF"), but the AKS node crashes before it can send the response back to the user. In this case, the AKS node would need to be able to recover its state and send the response once it is back online.
+
+### Local storage encryption
+
+While we focus on AKS in this document, there is a slight overlap with the TSS; we briefly discuss both here.
+
+When it comes to encrypted local storage, TSS nodes **must** be able to recover their encryption key on a reboot.
+
+Without such a mechanism, the consequences for the TSS network as a whole range from bad (need to trigger a key re-share) to catastrophic (need to restart the whole network?). For AKS nodes losing access to their local storage the consequences are less dire but given we have to build it for TSS, the same architecture can benefit AKS nodes, enabling them to recover from a reboot.
+
+The amount of data stored at an AKS node is small and updates probably rare. It is fine to simply store everything in memory and implement a periodical checkpoint mechanism to flush the data to disk.
 
 The form of the disk-based storage does not matter very much for the current conversation, as long as it is encrypted under a key known only to the AKS node itself. It could be a sqlite database or a bincode-encoded dump of the in-memory data tossed into a file and saved; it could also be a binary blob stored on the blockchain.
 
-Without access to the current state the AKS node is not operational and the node will not accept RPCs at all until the state is available, checked to be valid and in sync with the other nodes.
+Without access to the current state the AKS node is not operational and the node will not accept RPCs at all until the state is available, checked to be valid and in sync with the other nodes. As discussed above, having a local dump of the node's state can speed up recovery after a reboot.
 
-### Store data in an encrypted binary blob on the blockchain
+### What about storing data in an encrypted binary blob on the blockchain?
 
 At first glance this option is attractive because it leverages the well-understood properties of the blockchain to replicate and distribute data trustlessly.
 
-The downside is that each AKS node would have to make a blockchain transaction at every block of the entire state. Even if the state size is small (~10Mb), when multiplied by the number of AKS nodes it can get unwieldy very quickly. There is also the matter of synchronizing the AKS operation with the cadence of block production, which is undesirable.
+The downside is that each AKS node would have to make a blockchain transaction at every block of the entire state. Even if the state size is small (~15Mb), when multiplied by the number of AKS nodes it can get unwieldy very quickly. There is also the matter of synchronizing the AKS operation with the cadence of block production, which is undesirable.
 
-There are many more problems with this approach (e.g. how to reconcile everyone's updates?).
+There are more problems with this approach:
 
-### Rely on replication between AKS nodes
+- If each AKS node dumps its own state on-chain, how to reconcile everyone's updates?
+- Using substrate JSONRPC calls to store data blobs means needing to run reliable and available RPC node infra: costly and centralized
+- Maybe AKS nodes could be light clients on the Entropy network and avoid having to trust an RPC node for verification, but is it really worth the effort? They'd still need a full node to submit their state updates.
 
-The AKS nodes will need a mechanism to ensure they all have the same secrets, ACLs etc so they will already be replicating most of the state between them (TODO: IS THERE AN ACTUAL PLAN FOR THIS WRITTEN DOWN?).
-This mechanism relies on attestation that guarantees that all the nodes run the same software and know where to find each other.
-
-If the assumptions above about the state size are correct, the replication mechanism wouldn't have to be very sophisticated. The state is small enough to be sent over the wire in a single message. New AKS nodes joining the network would need this anyway.
-
-### Store data in a file on disk
-
-There is a scenario where data about in-flight operations becomes crucial, and having a local data store could be important. Consider a AKS node that has successfully executed a request to a remote service ("hey Coinbase, close my account and send all the coins to 0xDEADBEEF"), but the AKS node crashes before it can send the response back to the user.
-In this case, the AKS node would need to be able to recover its state and send the response once it is back online. It would be awkward to include pending responses in the replicated state, as they are not relevant to other nodes and would only bloat the state unnecessarily.
-
-Local, disk-based storage could be useful here.
-
-The scenario described is less of a problem for outgoing pending requests. If the AKS node crashes after receiving the payload to forward, but before sending it, the user would see a timeout/disconnect error but their state would not be invalid and they could simply try again later (or with a different AKS node).
-
-## State encryption key(s)
-
-So far we have established that the AKS nodes need to store a small amount of data _somewhere_, and that the data must be encrypted. The encryption key must not be known to the outside world, including the server operators and blockchain validators.
-
-Furthermore, AKS nodes must be able to communicate among themselves so they can replicate the state. The communication between AKS nodes is based Noise + websockets. New nodes joining the network must have a way to get a copy of the complete state.
-
-In conclusion we have the following requirements:
-
-- A rebooting AKS node is not different from a new AKS node joining the network, modulo pending responses.
-- Thanks to attestation and TDX-local Noise protocol encryption, AKS nodes have a secure channel among themselves, private to all external actors.
-- It is likely useful to have a local disk-based storage in place in addition to replication, to store pending responses and other ephemeral data. The encryption key for this local data can be safely be the same for all AKS nodes and be included in the state replication message payload.
-
-## Attack scenarios
+## A few words on attack scenarios
 
 - A TDX compromise is catastrophic; the AKS node would be compromised and with it all user secrets. Game over.
 - A dishonest server operator can probably pull off a successful rollback attack on local disk storage, replacing a file with an older version containing a state they like better. This is probably not catastrophic for the whole network, especially if data stored locally is limited to just pending responses and ephemeral (meta-)data.
 - Eclipse and DoS attacks are trivial; defense here will rely on the blockchain noticing that AKS nodes are unavailable and having ways of replacing them. If the attacks are temporary this is probably not catastrophic for the network as a whole.
-- Bugs in the AKS code can easily be catastrophic. An AKS node's job is akin to that of a browser: make arbitrary http requests and a bad bug in http response parsing could lead to data leaks. This scenario has nothing to do with data storage though.
-- Network partitions, while certainly unpleasant, are probably not catastrophic. The AKS nodes will be able to continue operating and serving requests, but they will not be able to replicate the state with the rest of the network. This is a problem for the network as a whole, but not for individual AKS nodes and when the network heals, the AKS nodes can probably patch up the state for most of the data.
+- Bugs in the AKS code can easily be catastrophic. An AKS node's job is akin to that of a browser (make arbitrary http requests) and a bad bug in http response parsing could lead to data leaks. This scenario has nothing to do with data storage though.
+- Network partitions, while certainly unpleasant, are probably not catastrophic. The AKS nodes can continue operating and serve requests, but they will not be able to replicate the state with the rest of the network. This is a problem for the network as a whole, but not for individual AKS nodes. When the network heals, the AKS nodes can (probably) patch up the state.
+- All AKS network traffic can be watched and even if it's all encrypted, a lot can be learned about users by just analyzing source and destination IP addresses and interaction patterns. Possible mitigations are NYM-style cover traffic with each AKS node acting as a proxy hop for their peers..
 
-## Unclear
+# Misc
 
-- Replicate state between AKS nodes or not.
+- Replicate state between AKS nodes or not?
   - If state is not replicated, how can the service scale? When one AKS node is "full", how can it's secrets be sharded to other nodes?
   - Eclipse attacks become much more disruptive to users. Same for DoS and partitions: the service effectively goes down.
 - Local persistent storage is either a useful extra or critical, depending on the decision wrt replication.
-  - Local persistent storage is useless without at least replicating the encryption key across all/most AKS ndoes.
+  - Local persistent storage is useless without a way to recover the encryption key (we can keep it all in RAM).
   - Is there any point in Shamir Secret Sharing (or other fancy crypto) of each AKS node's storage encryption key?
     - Yes, because it would allow the system to survive a corrupt TDX enclave. SGX teaches us that many attacks are possible only with physical access to the machine running the enclave, so even if TDX is broken, it's not a given that all AKS nodes will be compromised immediately.
-    - No, not really: a corrupted TDX enclave can just pretend that "Hey fellow AKS nodes, evil AWS killed my disk and I had to reboot, can y'all send me the key again please?".
+    - No, not really: a corrupted TDX enclave can just pretend that "Hey key-recovery-server, evil AWS killed my disk and I had to reboot, can y'all send me the key again please?".
   - Do all AKS nodes need to store all the secrets?
     - Yes, because the service needs to be able to scale and the secrets need to be replicated. Also: what is even the point of the AKS service if it's not decentralized, censorship resistant and available?
     - No, because the service can scale by adding more AKS nodes and manually sharding the secrets among them. When nodes die or are upgraded, users have to manually re-upload their secrets.
@@ -223,3 +205,7 @@ In conclusion we have the following requirements:
 Replication for AKS is probably a bit easier to implement if we can rely on a secret key storage solution like SGX Seal API, but does not require it.
 
 ### SGX Sealing API as a keyserver for AKS/TSS
+
+This is probably a very good avenue to explore further. Currently all CPUs that support TDX also support SGX so we can probably re-utilize the infra. The SGX Sealing API has been hacked several times over the years and not all of the vulnerabilities have been definitively patched (last Intel fix was rolled out in Nov 2024). On the other hand SGX is probably roughly as secure as TDX is.
+
+_TODO: find a proper home for the SGX conversation and extend the text with an outline of the flow._

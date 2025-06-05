@@ -41,7 +41,7 @@ _TODO: HTTP requests? Or websockets? Or either? The untrusted cloud operator can
 
 The relevant RPC endpoints exposed by the AKS are:
 
-- `POST /secret?data=&acl=`: adds a new secret with an appropriate ACL; returns a `secret_id`.
+- `POST /deploy-api-key`: adds a new secret.  This is associated with a given URL of the service it is for, and the public key of the user who signs the request body.
 - `PUT /secret?id=&data=&acl`: updates the secret and/or ACL with secret_id `id`.
 - `DELETE /secret?id`: deletes the secret with secret_id `id`.
 - `GET /make-request?id=&remote-url=&verb=&payload=`: instructs the AKS to make a remote API call to `remote-url` using the http verb `verb` and the secret matching the `id` to send the payload in `payload`.

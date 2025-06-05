@@ -3,10 +3,10 @@ use anyhow::anyhow;
 use clap::{Parser, Subcommand};
 use entropy_api_key_service_client::ApiKeyServiceClient;
 use reqwest::{
-    header::{HeaderName, HeaderValue},
     Body, Method, Request, Url,
+    header::{HeaderName, HeaderValue},
 };
-use sp_core::{sr25519, Pair};
+use sp_core::{Pair, sr25519};
 
 #[derive(Parser, Debug, Clone)]
 #[command(about, version)]

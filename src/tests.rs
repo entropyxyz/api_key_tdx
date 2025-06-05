@@ -5,7 +5,7 @@ use entropy_client::chain_api::{
 };
 use entropy_testing_utils::substrate_context::test_node_process;
 use serial_test::serial;
-use sp_core::{sr25519, Pair};
+use sp_core::{Pair, sr25519};
 use sp_keyring::AccountKeyring;
 
 #[tokio::test]
@@ -49,8 +49,10 @@ async fn test_declare_times_out() {
 
     let result = delcare_to_chain(&api, &rpc, server_info, &pair, None).await;
     // Random pair does not have funds and should give an error
-    assert!(result
-        .unwrap_err()
-        .to_string()
-        .contains("Inability to pay some fees (e.g. account balance too low)"));
+    assert!(
+        result
+            .unwrap_err()
+            .to_string()
+            .contains("Inability to pay some fees (e.g. account balance too low)")
+    );
 }

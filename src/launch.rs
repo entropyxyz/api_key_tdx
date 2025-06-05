@@ -2,20 +2,20 @@ use crate::{attestation::create_quote, errors::Err};
 use backoff::ExponentialBackoff;
 use entropy_client::{
     chain_api::{
-        entropy::{self, runtime_types::pallet_outtie::module::JoiningOuttieServerInfo},
         EntropyConfig,
+        entropy::{self, runtime_types::pallet_outtie::module::JoiningOuttieServerInfo},
     },
     request_attestation,
 };
-use sp_core::{crypto::Ss58Codec, sr25519, Pair};
+use sp_core::{Pair, crypto::Ss58Codec, sr25519};
 use std::time::Duration;
 use subxt::{
+    Config, OnlineClient,
     backend::legacy::LegacyRpcMethods,
     blocks::ExtrinsicEvents,
     config::DefaultExtrinsicParamsBuilder as Params,
     tx::{Payload, Signer, TxStatus},
-    utils::{AccountId32 as SubxtAccountId32, MultiSignature, H256},
-    Config, OnlineClient,
+    utils::{AccountId32 as SubxtAccountId32, H256, MultiSignature},
 };
 use subxt_core::{storage::address::Address, utils::Yes};
 

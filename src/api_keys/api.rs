@@ -1,5 +1,5 @@
-use crate::{app_state::AppState, errors::Err, DeployApiKeyInfo, SendApiKeyMessage};
-use axum::{extract::State, http::StatusCode, Json};
+use crate::{DeployApiKeyInfo, SendApiKeyMessage, app_state::AppState, errors::Err};
+use axum::{Json, extract::State, http::StatusCode};
 use entropy_protocol::sign_and_encrypt::EncryptedSignedMessage;
 use std::time::{SystemTime, UNIX_EPOCH};
 use subxt::utils::AccountId32 as SubxtAccountId32;
@@ -21,7 +21,7 @@ pub async fn deploy_api_key(
     check_stale(user_api_key_info.timestamp, current_timestamp).await?;
 
     app_state.write_to_api_keys(
-        (request_author.0, user_api_key_info.api_url),
+        (request_author.0, user_api_key_info.api_url_base),
         user_api_key_info.api_key,
     )?;
 
@@ -43,21 +43,26 @@ pub async fn make_request(
     check_stale(user_make_request_info.timestamp, current_timestamp).await?;
 
     let api_key_info = app_state
-        .read_from_api_keys(&(request_author.0, user_make_request_info.api_url.clone()))?
+        .read_from_api_keys(&(
+            request_author.0,
+            user_make_request_info.api_url_base.clone(),
+        ))?
         .unwrap();
 
     let client = reqwest::Client::new();
+    let full_url = format!(
+        "{}{}",
+        user_make_request_info.api_url_base, user_make_request_info.api_url_extra
+    );
 
     let response = match user_make_request_info.http_verb.as_str() {
         "get" => {
-            let url = user_make_request_info
-                .api_url
-                .replace("xxxREPLACE_MExxx", &api_key_info);
+            let url = full_url.replace("xxxREPLACE_MExxx", &api_key_info);
             Ok(client.get(url).send().await?)
         }
         "post" => {
             let result = client
-                .post(user_make_request_info.api_url)
+                .post(full_url)
                 .header("Content-Type", "application/json")
                 .header("Authorization", format!("Bearer {}", &api_key_info))
                 .body(user_make_request_info.request_body)
@@ -68,15 +73,9 @@ pub async fn make_request(
         _ => Err(Err::UnsupportedHttpVerb),
     }?;
 
-    // let result = client
-    //     .post(user_make_request_info.api_url)
-    //     .header("Content-Type", "application/json")
-    //     .body(user_make_request_info.request_body)
-    //     .send()
-    //     .await?;
-
     Ok((StatusCode::OK, response.text().await?))
 }
+
 // Get current timestamp
 pub fn get_current_timestamp() -> Result<u64, Err> {
     Ok(SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs())

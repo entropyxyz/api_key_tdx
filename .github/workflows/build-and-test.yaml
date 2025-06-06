@@ -23,10 +23,10 @@ jobs:
       - name: Check client crate compiles
         run: cargo check -p entropy-api-key-service-client
 
-      - name: Get entropy binary from latest release
+      - name: Get entropy binary from release with `master` tag
         run: |
-          docker pull entropyxyz/entropy:latest
-          docker create --name extract-entropy-binary entropyxyz/entropy:latest
+          docker pull entropyxyz/entropy:master
+          docker create --name extract-entropy-binary entropyxyz/entropy:master
           docker cp extract-entropy-binary:/usr/local/bin/entropy ./entropy
           docker container remove extract-entropy-binary
 

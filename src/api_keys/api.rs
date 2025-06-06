@@ -20,10 +20,9 @@ pub async fn deploy_api_key(
     let current_timestamp = get_current_timestamp()?;
 
     check_stale(user_api_key_info.timestamp, current_timestamp).await?;
-    let api_url = Url::parse(&user_api_key_info.api_url)
-        .unwrap()
+    let api_url = Url::parse(&user_api_key_info.api_url)?
         .host_str()
-        .unwrap()
+        .ok_or(Err::UrlHost)?
         .to_string();
 
     app_state.write_to_api_keys((request_author.0, api_url), user_api_key_info.api_key)?;
@@ -45,11 +44,11 @@ pub async fn make_request(
 
     check_stale(user_make_request_info.timestamp, current_timestamp).await?;
 
-    let url_parsed = Url::parse(&user_make_request_info.api_url).unwrap();
-    let url_host = url_parsed.host_str().unwrap().to_string();
+    let url_parsed = Url::parse(&user_make_request_info.api_url)?;
+    let url_host = url_parsed.host_str().ok_or(Err::UrlHost)?.to_string();
     let api_key_info = app_state
         .read_from_api_keys(&(request_author.0, url_host))?
-        .unwrap();
+        .ok_or(Err::UrlEmpty)?;
 
     let client = reqwest::Client::new();
     let url = user_make_request_info

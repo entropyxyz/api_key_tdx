@@ -52,17 +52,17 @@ pub async fn make_request(
         .unwrap();
 
     let client = reqwest::Client::new();
-
+    let url = user_make_request_info
+        .api_url
+        .replace("xxxREPLACE_MExxx", &api_key_info);
     let response = match user_make_request_info.http_verb.as_str() {
         "get" => {
-            let url = user_make_request_info
-                .api_url
-                .replace("xxxREPLACE_MExxx", &api_key_info);
+            let url = url.replace("xxxREPLACE_MExxx", &api_key_info);
             Ok(client.get(url).send().await?)
         }
         "post" => {
             let result = client
-                .post(user_make_request_info.api_url)
+                .post(url)
                 .header("Content-Type", "application/json")
                 .header("Authorization", format!("Bearer {}", &api_key_info))
                 .body(user_make_request_info.request_body)

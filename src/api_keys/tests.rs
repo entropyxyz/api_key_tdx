@@ -13,19 +13,25 @@ async fn test_deploy_api_key() {
     let app_state = setup_client().await;
     let one = AccountKeyring::One;
 
-    let api_url_base = "test".to_string();
+    let api_url = "https://github.com/".to_string();
     let api_key = "test".to_string();
 
     let client = make_test_client(&app_state, &one);
 
     client
-        .deploy_api_key(api_key.clone(), api_url_base.clone())
+        .deploy_api_key(api_key.clone(), api_url.clone())
         .await
         .unwrap();
 
+    let api_url_mock = Url::parse(&api_url)
+        .unwrap()
+        .host_str()
+        .unwrap()
+        .to_string();
+
     assert_eq!(
         app_state
-            .read_from_api_keys(&(one.pair().public().0, api_url_base))
+            .read_from_api_keys(&(one.pair().public().0, api_url_mock))
             .unwrap()
             .unwrap(),
         api_key
@@ -37,21 +43,20 @@ async fn test_deploy_api_key() {
 async fn test_make_request_get() {
     let app_state = setup_client().await;
     let one = AccountKeyring::One;
-    let api_url_base = "https://api.thecatapi.com";
+    let api_url_string = "https://api.thecatapi.com/v1/images/search?limit=1&breed_ids=beng&api_key=xxxREPLACE_MExxx";
     let api_key =
         "live_MdrxblW1YgdnmuI3jVSJNLSqcdljuF3T2PDy26hWXk7fROoojH479EkhrDhYJIy4".to_string();
-    let api_url = Url::parse(api_url_base).unwrap();
-    let api_url_extra =
-        "/v1/images/search?limit=1&breed_ids=beng&api_key=xxxREPLACE_MExxx".to_string();
+    let api_url = Url::parse(api_url_string).unwrap();
+    let api_url_mock = api_url.host_str().unwrap().to_string();
 
-    let _ = app_state.write_to_api_keys((one.pair().public().0, api_url_base.to_string()), api_key);
+    let _ = app_state.write_to_api_keys((one.pair().public().0, api_url_mock.to_string()), api_key);
 
     let client = make_test_client(&app_state, &one);
 
     let mut request = reqwest::Request::new(Method::GET, api_url);
     let body = request.body_mut();
     *body = Some(Body::wrap("test".to_string()));
-    let response = client.make_request(request, api_url_extra).await.unwrap();
+    let response = client.make_request(request).await.unwrap();
 
     assert_eq!(response.status(), 200);
     assert_eq!(&response.text().await.unwrap()[0..10], "[{\"breeds\"");
@@ -62,18 +67,18 @@ async fn test_make_request_get() {
 async fn test_make_request_get_with_local_test_server() {
     let app_state = setup_client().await;
     let one = AccountKeyring::One;
-    let api_url_base = "http://127.0.0.1:3002";
-    let api_url_extra = "/protected?api-key=xxxREPLACE_MExxx".to_string();
+    let api_url_string = "http://127.0.0.1:3002/protected?api-key=xxxREPLACE_MExxx";
     let api_key = "some-secret".to_string();
-    let api_url = Url::parse(api_url_base).unwrap();
-    let _ = app_state.write_to_api_keys((one.pair().public().0, api_url_base.to_string()), api_key);
+    let api_url = Url::parse(api_url_string).unwrap();
+    let api_url_mock = api_url.host_str().unwrap().to_string();
+    let _ = app_state.write_to_api_keys((one.pair().public().0, api_url_mock), api_key);
 
     let client = make_test_client(&app_state, &one);
 
     let mut request = reqwest::Request::new(Method::GET, api_url);
     let body = request.body_mut();
     *body = Some(Body::wrap("test".to_string()));
-    let response = client.make_request(request, api_url_extra).await.unwrap();
+    let response = client.make_request(request).await.unwrap();
 
     assert_eq!(response.status(), 200);
     assert_eq!(&response.text().await.unwrap(), "Success response");

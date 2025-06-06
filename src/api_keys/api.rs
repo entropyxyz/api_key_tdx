@@ -3,6 +3,7 @@ use axum::{Json, extract::State, http::StatusCode};
 use entropy_protocol::sign_and_encrypt::EncryptedSignedMessage;
 use std::time::{SystemTime, UNIX_EPOCH};
 use subxt::utils::AccountId32 as SubxtAccountId32;
+use url::Url;
 
 /// Defines the maximum allowed time difference for an api call in seconds
 pub const TIME_BUFFER: u64 = 20;
@@ -19,11 +20,13 @@ pub async fn deploy_api_key(
     let current_timestamp = get_current_timestamp()?;
 
     check_stale(user_api_key_info.timestamp, current_timestamp).await?;
+    let api_url = Url::parse(&user_api_key_info.api_url)
+        .unwrap()
+        .host_str()
+        .unwrap()
+        .to_string();
 
-    app_state.write_to_api_keys(
-        (request_author.0, user_api_key_info.api_url_base),
-        user_api_key_info.api_key,
-    )?;
+    app_state.write_to_api_keys((request_author.0, api_url), user_api_key_info.api_key)?;
 
     Ok(StatusCode::OK)
 }
@@ -42,27 +45,24 @@ pub async fn make_request(
 
     check_stale(user_make_request_info.timestamp, current_timestamp).await?;
 
+    let url_parsed = Url::parse(&user_make_request_info.api_url).unwrap();
+    let url_host = url_parsed.host_str().unwrap().to_string();
     let api_key_info = app_state
-        .read_from_api_keys(&(
-            request_author.0,
-            user_make_request_info.api_url_base.clone(),
-        ))?
+        .read_from_api_keys(&(request_author.0, url_host))?
         .unwrap();
 
     let client = reqwest::Client::new();
-    let full_url = format!(
-        "{}{}",
-        user_make_request_info.api_url_base, user_make_request_info.api_url_extra
-    );
 
     let response = match user_make_request_info.http_verb.as_str() {
         "get" => {
-            let url = full_url.replace("xxxREPLACE_MExxx", &api_key_info);
+            let url = user_make_request_info
+                .api_url
+                .replace("xxxREPLACE_MExxx", &api_key_info);
             Ok(client.get(url).send().await?)
         }
         "post" => {
             let result = client
-                .post(full_url)
+                .post(user_make_request_info.api_url)
                 .header("Content-Type", "application/json")
                 .header("Authorization", format!("Bearer {}", &api_key_info))
                 .body(user_make_request_info.request_body)

@@ -88,11 +88,11 @@ impl ApiKeyServiceClient {
     pub async fn deploy_api_key(
         &self,
         api_key: String,
-        api_url_base: String,
+        api_url: String,
     ) -> Result<(), ClientError> {
         let user_api_key_info = DeployApiKeyInfo {
             api_key,
-            api_url_base,
+            api_url,
             timestamp: get_current_timestamp()?,
         };
 
@@ -116,7 +116,6 @@ impl ApiKeyServiceClient {
     pub async fn make_request(
         &self,
         request: reqwest::Request,
-        api_url_extra: String,
     ) -> Result<reqwest::Response, ClientError> {
         let request_body = match request.body() {
             Some(body) => String::from_utf8(body.as_bytes().unwrap_or_default().to_vec())?,
@@ -125,14 +124,13 @@ impl ApiKeyServiceClient {
         let send_api_key_message = SendApiKeyMessage {
             request_body,
             http_verb: request.method().as_str().to_lowercase().to_string(),
-            api_url_base: request
+            api_url: request
                 .url()
                 .as_str()
                 .to_string()
                 .strip_suffix("/")
                 .unwrap_or(request.url().as_str())
                 .to_string(),
-            api_url_extra,
             timestamp: get_current_timestamp()?,
         };
 

@@ -53,7 +53,7 @@ pub enum Err {
     UnknownContext,
     #[error("Url parse error: {0}")]
     UrlParse(#[from] url::ParseError),
-    #[error("Url host error")]
+    #[error("Unable to get hostname from given URL")]
     UrlHost,
     #[error("No api key for user url")]
     UrlEmpty,

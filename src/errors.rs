@@ -51,6 +51,12 @@ pub enum Err {
     AttestationRequest(#[from] entropy_client::errors::AttestationRequestError),
     #[error("Invalid or unknown context value given in query string")]
     UnknownContext,
+    #[error("Url parse error: {0}")]
+    UrlParse(#[from] url::ParseError),
+    #[error("Unable to get hostname from given URL")]
+    UrlHost,
+    #[error("No api key for user url")]
+    UrlEmpty,
     #[cfg(feature = "production")]
     #[error("Quote parse: {0}")]
     QuoteParse(#[from] tdx_quote::QuoteParseError),

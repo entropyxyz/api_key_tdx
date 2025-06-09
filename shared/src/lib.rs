@@ -7,7 +7,7 @@ pub struct DeployApiKeyInfo {
     /// The secret API key to be deployed
     pub api_key: String,
     /// URL of the service to use it with
-    pub api_url_base: String,
+    pub api_url: String,
     /// Current unix time in seconds
     pub timestamp: u64,
 }
@@ -19,10 +19,8 @@ pub struct SendApiKeyMessage {
     pub request_body: String,
     /// The HTTP verb to use
     pub http_verb: String,
-    /// The URL base for the HTTP request ex:(http://127.0.0.1:3002")
-    pub api_url_base: String,
-    /// The extra url info after the base url
-    pub api_url_extra: String,
+    /// The URL for the HTTP request
+    pub api_url: String,
     /// Current unix time in seconds
     pub timestamp: u64,
 }

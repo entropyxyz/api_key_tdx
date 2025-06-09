@@ -89,10 +89,14 @@ impl ApiKeyServiceClient {
         &self,
         api_key: String,
         api_url: String,
+        cert: String,
+        public_key: String,
     ) -> Result<(), ClientError> {
         let user_api_key_info = DeployApiKeyInfo {
             api_key,
             api_url,
+            cert,
+            public_key,
             timestamp: get_current_timestamp()?,
         };
 

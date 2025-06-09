@@ -37,6 +37,8 @@ enum CliCommand {
         api_key: String,
         /// URL of the HTTP service associated with this key
         api_url: String,
+        cert: String,
+        public_key: String,
     },
     /// Make a request substituting `xxxREPLACE_MExxx` with your API key
     MakeRequest {
@@ -71,8 +73,15 @@ async fn main() -> anyhow::Result<()> {
     );
 
     match args.command {
-        CliCommand::DeployApiKey { api_key, api_url } => {
-            client.deploy_api_key(api_key, api_url).await?;
+        CliCommand::DeployApiKey {
+            api_key,
+            api_url,
+            cert,
+            public_key,
+        } => {
+            client
+                .deploy_api_key(api_key, api_url, cert, public_key)
+                .await?;
             println!("Api key deployed successfully");
         }
         CliCommand::MakeRequest {

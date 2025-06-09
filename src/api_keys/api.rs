@@ -25,7 +25,14 @@ pub async fn deploy_api_key(
         .ok_or(Err::UrlHost)?
         .to_string();
 
-    app_state.write_to_api_keys((request_author.0, api_url), user_api_key_info.api_key)?;
+    app_state.write_to_api_keys(
+        (request_author.0, api_url),
+        (
+            user_api_key_info.api_key,
+            user_api_key_info.cert,
+            user_api_key_info.public_key,
+        ),
+    )?;
 
     Ok(StatusCode::OK)
 }
@@ -53,14 +60,14 @@ pub async fn make_request(
     let client = reqwest::Client::new();
     let url = user_make_request_info
         .api_url
-        .replace("xxxREPLACE_MExxx", &api_key_info);
+        .replace("xxxREPLACE_MExxx", &api_key_info.0);
     let response = match user_make_request_info.http_verb.as_str() {
         "get" => Ok(client.get(url).send().await?),
         "post" => {
             let result = client
                 .post(url)
                 .header("Content-Type", "application/json")
-                .header("Authorization", format!("Bearer {}", &api_key_info))
+                .header("Authorization", format!("Bearer {}", &api_key_info.0))
                 .body(user_make_request_info.request_body)
                 .send()
                 .await?;

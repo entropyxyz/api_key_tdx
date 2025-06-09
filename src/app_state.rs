@@ -11,6 +11,8 @@ use subxt::{
 };
 use x25519_dalek::StaticSecret;
 
+pub type ApiKeyAndCerts = (String, String, String);
+
 /// Application state struct which is cloned and made available to every axum HTTP route handler function
 #[derive(Clone)]
 pub struct AppState {
@@ -21,7 +23,7 @@ pub struct AppState {
     /// Configuation containing the chain endpoint
     pub configuration: Configuration,
     /// Storage for api keys
-    pub api_keys: Arc<RwLock<HashMap<([u8; 32], String), String>>>,
+    pub api_keys: Arc<RwLock<HashMap<([u8; 32], String), ApiKeyAndCerts>>>,
 }
 
 impl AppState {
@@ -65,7 +67,11 @@ impl AppState {
     }
 
     /// Write to api key
-    pub fn write_to_api_keys(&self, key: ([u8; 32], String), value: String) -> Result<(), Err> {
+    pub fn write_to_api_keys(
+        &self,
+        key: ([u8; 32], String),
+        value: ApiKeyAndCerts,
+    ) -> Result<(), Err> {
         self.clear_poisioned_api_keys();
         let mut api_keys = self
             .api_keys
@@ -76,7 +82,10 @@ impl AppState {
     }
 
     /// Reads from api key will error if no value, call exists_in_request_limit to check
-    pub fn read_from_api_keys(&self, key: &([u8; 32], String)) -> Result<Option<String>, Err> {
+    pub fn read_from_api_keys(
+        &self,
+        key: &([u8; 32], String),
+    ) -> Result<Option<ApiKeyAndCerts>, Err> {
         self.clear_poisioned_api_keys();
         let api_keys = self
             .api_keys

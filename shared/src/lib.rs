@@ -6,6 +6,8 @@ use serde::{Deserialize, Serialize};
 pub struct DeployApiKeyInfo {
     /// The secret API key to be deployed
     pub api_key: String,
+    pub cert: String,
+    pub public_key: String,
     /// URL of the service to use it with
     pub api_url: String,
     /// Current unix time in seconds

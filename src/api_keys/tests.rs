@@ -15,11 +15,17 @@ async fn test_deploy_api_key() {
 
     let api_url = "https://github.com/".to_string();
     let api_key = "test".to_string();
-
+    let cert = "".to_string();
+    let public_key = "".to_string();
     let client = make_test_client(&app_state, &one);
 
     client
-        .deploy_api_key(api_key.clone(), api_url.clone())
+        .deploy_api_key(
+            api_key.clone(),
+            api_url.clone(),
+            cert.clone(),
+            public_key.clone(),
+        )
         .await
         .unwrap();
 
@@ -34,7 +40,7 @@ async fn test_deploy_api_key() {
             .read_from_api_keys(&(one.pair().public().0, api_url_mock))
             .unwrap()
             .unwrap(),
-        api_key
+        (api_key, cert.clone(), public_key.clone())
     )
 }
 
@@ -48,8 +54,13 @@ async fn test_make_request_get() {
         "live_MdrxblW1YgdnmuI3jVSJNLSqcdljuF3T2PDy26hWXk7fROoojH479EkhrDhYJIy4".to_string();
     let api_url = Url::parse(api_url_string).unwrap();
     let api_url_mock = api_url.host_str().unwrap().to_string();
+    let cert = "".to_string();
+    let public_key = "".to_string();
 
-    let _ = app_state.write_to_api_keys((one.pair().public().0, api_url_mock.to_string()), api_key);
+    let _ = app_state.write_to_api_keys(
+        (one.pair().public().0, api_url_mock.to_string()),
+        (api_key, cert.clone(), public_key.clone()),
+    );
 
     let client = make_test_client(&app_state, &one);
 
@@ -71,7 +82,12 @@ async fn test_make_request_get_with_local_test_server() {
     let api_key = "some-secret".to_string();
     let api_url = Url::parse(api_url_string).unwrap();
     let api_url_mock = api_url.host_str().unwrap().to_string();
-    let _ = app_state.write_to_api_keys((one.pair().public().0, api_url_mock), api_key);
+    let cert = "".to_string();
+    let public_key = "".to_string();
+    let _ = app_state.write_to_api_keys(
+        (one.pair().public().0, api_url_mock),
+        (api_key, cert.clone(), public_key.clone()),
+    );
 
     let client = make_test_client(&app_state, &one);
 

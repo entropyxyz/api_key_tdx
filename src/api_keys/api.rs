@@ -55,10 +55,7 @@ pub async fn make_request(
         .api_url
         .replace("xxxREPLACE_MExxx", &api_key_info);
     let response = match user_make_request_info.http_verb.as_str() {
-        "get" => {
-            let url = url.replace("xxxREPLACE_MExxx", &api_key_info);
-            Ok(client.get(url).send().await?)
-        }
+        "get" => Ok(client.get(url).send().await?),
         "post" => {
             let result = client
                 .post(url)

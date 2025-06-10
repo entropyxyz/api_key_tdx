@@ -169,4 +169,4 @@ There are more problems with this approach:
 
 This is probably a very good avenue to explore further. Currently all CPUs that support TDX also support SGX so we can probably re-utilize the infra. The SGX Sealing API has been hacked several times over the years and not all of the vulnerabilities have been definitively patched (last Intel fix was rolled out in Nov 2024). On the other hand SGX is probably roughly as secure as TDX is.
 
-_TODO: find a proper home for the SGX conversation and extend the text with an outline of the flow._
+This is discussed in [entropy-core#1472](https://github.com/entropyxyz/entropy-core/issues/1472).

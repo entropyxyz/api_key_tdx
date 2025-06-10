@@ -98,7 +98,7 @@ For AKS state replication we distinguish two cases:
 Flow outline:
 
 - Generate keypairs (Account ID for signing and x25519 pair for encryption).
-- Request a quote nonce from the chain using [`entropy-client::user::request_attestation`](https://docs.rs/entropy-client/0.4.0-rc.1/entropy_client/user/fn.request_attestation.html). This submits an extrinsic which causes the chain respond with an event containing a nonce which is associated with the keypair used to sign the extrinsic.
+- Request a quote nonce from the chain using [`entropy-client::user::request_attestation`](https://docs.rs/entropy-client/0.4.0-rc.1/entropy_client/user/fn.request_attestation.html). This submits an extrinsic which causes the chain to respond with an event containing a nonce which is associated with the keypair used to sign the extrinsic.
 - Generate a TDX quote using the following as input data (which is signed as part of the quote body):
   - The nonce from the previous step
   - The account ID and x25519 public key 

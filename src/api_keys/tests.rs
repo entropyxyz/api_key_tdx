@@ -15,6 +15,7 @@ async fn test_deploy_api_key() {
 
     let api_url = "https://github.com/".to_string();
     let api_key = "test".to_string();
+    let api_key_2 = "test_2".to_string();
 
     let client = make_test_client(&app_state, &one);
 
@@ -31,11 +32,24 @@ async fn test_deploy_api_key() {
 
     assert_eq!(
         app_state
-            .read_from_api_keys(&(one.pair().public().0, api_url_mock))
+            .read_from_api_keys(&(one.pair().public().0, api_url_mock.clone()))
             .unwrap()
             .unwrap(),
         api_key
-    )
+    );
+
+    client
+        .deploy_api_key(api_key_2.clone(), api_url.clone())
+        .await
+        .unwrap();
+
+    assert_eq!(
+        app_state
+            .read_from_api_keys(&(one.pair().public().0, api_url_mock))
+            .unwrap()
+            .unwrap(),
+        api_key_2
+    );
 }
 
 #[tokio::test]

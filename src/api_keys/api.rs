@@ -1,5 +1,5 @@
 use crate::{
-    ChangeApiKeyInfo, DeployApiKeyInfo, SendApiKeyMessage, app_state::AppState, errors::Err,
+    DeleteApiKeyInfo, DeployApiKeyInfo, SendApiKeyMessage, app_state::AppState, errors::Err,
 };
 use axum::{Json, extract::State, http::StatusCode};
 use entropy_protocol::sign_and_encrypt::EncryptedSignedMessage;
@@ -32,33 +32,13 @@ pub async fn deploy_api_key(
     Ok(StatusCode::OK)
 }
 
-pub async fn update_secret(
-    State(app_state): State<AppState>,
-    Json(encrypted_msg): Json<EncryptedSignedMessage>,
-) -> Result<StatusCode, Err> {
-    let signed_message = encrypted_msg.decrypt(&app_state.x25519_secret, &[])?;
-
-    let user_api_key_info: ChangeApiKeyInfo = serde_json::from_slice(&signed_message.message.0)?;
-    let request_author = SubxtAccountId32(*signed_message.account_id().as_ref());
-
-    let current_timestamp = get_current_timestamp()?;
-    check_stale(user_api_key_info.timestamp, current_timestamp).await?;
-
-    let api_url = Url::parse(&user_api_key_info.api_url)?
-        .host_str()
-        .ok_or(Err::UrlHost)?
-        .to_string();
-
-    Ok(StatusCode::OK)
-}
-
 pub async fn delete_secret(
     State(app_state): State<AppState>,
     Json(encrypted_msg): Json<EncryptedSignedMessage>,
 ) -> Result<StatusCode, Err> {
     let signed_message = encrypted_msg.decrypt(&app_state.x25519_secret, &[])?;
 
-    let user_api_key_info: DeployApiKeyInfo = serde_json::from_slice(&signed_message.message.0)?;
+    let user_api_key_info: DeleteApiKeyInfo = serde_json::from_slice(&signed_message.message.0)?;
     let request_author = SubxtAccountId32(*signed_message.account_id().as_ref());
 
     let current_timestamp = get_current_timestamp()?;
@@ -68,6 +48,8 @@ pub async fn delete_secret(
         .host_str()
         .ok_or(Err::UrlHost)?
         .to_string();
+
+    app_state.delete_from_api_keys((request_author.0, api_url))?;
 
     Ok(StatusCode::OK)
 }

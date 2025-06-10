@@ -13,7 +13,7 @@ pub mod test_helpers;
 pub mod tests;
 
 use crate::{
-    api_keys::api::{delete_secret, deploy_api_key, make_request, update_secret},
+    api_keys::api::{delete_secret, deploy_api_key, make_request},
     health::api::healthz,
     launch::delcare_to_chain,
     node_info::api::{info, version},
@@ -31,7 +31,7 @@ use sp_core::{Pair, sr25519};
 use std::{net::SocketAddr, str::FromStr};
 use x25519_dalek::StaticSecret;
 
-pub use entropy_api_key_service_shared::{ChangeApiKeyInfo, DeployApiKeyInfo, SendApiKeyMessage};
+pub use entropy_api_key_service_shared::{DeleteApiKeyInfo, DeployApiKeyInfo, SendApiKeyMessage};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -86,7 +86,6 @@ pub fn app(app_state: AppState) -> Router {
     let routes = Router::new()
         .route("/healthz", get(healthz))
         .route("/deploy-api-key", post(deploy_api_key))
-        .route("/update-secret", post(update_secret))
         .route("/delete-secret", post(delete_secret))
         .route("/make-request", post(make_request))
         .route("/version", get(version))

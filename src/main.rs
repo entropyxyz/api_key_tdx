@@ -13,7 +13,7 @@ pub mod test_helpers;
 pub mod tests;
 
 use crate::{
-    api_keys::api::{deploy_api_key, make_request},
+    api_keys::api::{deploy_api_key, make_request, update_secret, delete_secret},
     health::api::healthz,
     launch::delcare_to_chain,
     node_info::api::{info, version},
@@ -86,6 +86,8 @@ pub fn app(app_state: AppState) -> Router {
     let routes = Router::new()
         .route("/healthz", get(healthz))
         .route("/deploy-api-key", post(deploy_api_key))
+        .route("/update-secret", post(update_secret))
+        .route("/delete-secret", post(delete_secret))
         .route("/make-request", post(make_request))
         .route("/version", get(version))
         .route("/info", get(info))

@@ -3,10 +3,10 @@ use anyhow::anyhow;
 use clap::{Parser, Subcommand};
 use entropy_api_key_service_client::ApiKeyServiceClient;
 use reqwest::{
-    header::{HeaderName, HeaderValue},
     Body, Method, Request, Url,
+    header::{HeaderName, HeaderValue},
 };
-use sp_core::{sr25519, Pair};
+use sp_core::{Pair, sr25519};
 
 #[derive(Parser, Debug, Clone)]
 #[command(about, version)]
@@ -81,19 +81,7 @@ async fn main() -> anyhow::Result<()> {
             body,
             header,
         } => {
-            // Split the URL into base and suffix components
-            let mut url_base = url.clone();
-            url_base.set_path("");
-            url_base.set_query(None);
-            url_base.set_fragment(None);
-
-            let url_extra = {
-                let prefix = url_base.to_string();
-                let full_url = url.to_string();
-                full_url[prefix.len()..].to_string()
-            };
-
-            let mut request = Request::new(verb.unwrap_or(Method::GET), url_base);
+            let mut request = Request::new(verb.unwrap_or(Method::GET), url);
 
             // Handle body
             if let Some(body_text) = body {
@@ -119,7 +107,7 @@ async fn main() -> anyhow::Result<()> {
                 );
             }
 
-            let response = client.make_request(request, url_extra).await?;
+            let response = client.make_request(request).await?;
             println!("Response: {response:?}");
         }
     }

@@ -112,7 +112,7 @@ impl ApiKeyServiceClient {
         }
     }
 
-    /// Deploy an API key
+    /// Deletes an API key
     pub async fn delete_api_key(&self, api_url: String) -> Result<(), ClientError> {
         let user_info = DeleteApiKeyInfo {
             api_url,

@@ -8,11 +8,11 @@ This document assumes the Entropy blockchain is up and running and has a working
 
 In addition to the threshold signing nodes, there is a set of API Key Service (AKS) nodes running `entropy-aks` inside CVMs; anyone can run AKS nodes.
 
-The AKS nodes are also attested and the blockchain API/on-chain registry can be queried for IP addresses and public keys in the same way as for the TSS case.
+The AKS nodes are also attested using TDX quotes and the blockchain API/on-chain registry can be queried for IP addresses and public keys in the same way as for the TSS case.
 
 The software composing the CVM for both TSS and AKS is defined ahead of time as a raw disk image and contains a minimal linux build (x86). Beyond basic OS services like networking, the CVM runs `entropy-tss` or `entropy-aks`.
 
-_TODO: Loop back to this section and describe how the Entropy chain, TSS and AKS interact especially wrt to attestations, fees, RPC-APIs etc._
+Since registering on-chain requires an attestation, and the public keys are given as input data to the quote, we assume that if a node can authenticate using the public keys it registered with, it has made an attestation and can be trusted to be running an endorsed release of the service.
 
 The API Key Service ("AKS" below) has two jobs:
 
@@ -45,9 +45,9 @@ See issue [#1398](https://github.com/entropyxyz/entropy-core/issues/1398) for ba
 
 ## Secret data CRUD
 
-Anyone on the internet can query the blockchain for the public key and hostname of an AKS node. Using this information they can establish a secure connection to the AKS node. The untrusted host running the CVM cannot MITM this connection.
+Anyone on the internet can query the blockchain for the public keys and hostnames of all active AKS nodes. Using this information they can establish a secure connection to an AKS node. The untrusted host running the CVM cannot MITM this connection, as the secret keys are generated in the CVM and never stored anywhere accessible to the host.
 
-_TODO: Spell out the reasons why this is secure and how it works in detail, e.g. how is the CVM attestation is verified by the user?, why this on-chain pubkey registry is sane, how it's kept up to date and what the difference is between this setup and standard TLS certs._
+It will be possible for clients to independently verify the on-chain attestation of a particular AKS instance before using it (pending [entropy-core#1438](https://github.com/entropyxyz/entropy-core/issues/1438) being resolved).
 
 Users submit and query data to/from the AKS nodes using standard HTTP POST requests with encrypted and signed payloads (encrypted under the AKS node's public key and signed by the user's private key). The untrusted host executing the CVM is assumed to be able to spy on the traffic and manipulate all data going to and from the AKS node inside the CVM, but has no way to decrypt the payload.
 
@@ -60,7 +60,9 @@ The relevant RPC endpoints exposed by the AKS are:
 
 **Note:** There are two aspects of ACLs. Firstly, the "ACL proper" that defines which users' public keys are allowed to use a secret; secondly the "usage ACL", defining how a secret can be used, e.g. "only for amounts smaller than `x`" or "only between 10am and 4pm". Refer to issue [#INSERT_ISSUE_NR_HERE] for the details of how this works.
 
-All calls to the AKS from the outside are signed and contain counter measures to replay attacks to stop a snooping cloud operator from recording traffic and replaying it at will. The API responses are encrypted to the end user's public key before they are sent back outside the AKS. Refer to issue [#INSERT_ISSUE_NR_HERE] for the details of how this works.
+All calls to the AKS from the outside are signed and contain counter measures to replay attacks to stop a snooping cloud operator from recording traffic and replaying it at will. The API responses are encrypted to the end user's public key before they are sent back outside the AKS.
+
+The encryption/authentication used is [the same as entropy-tss uses](https://github.com/entropyxyz/entropy-core/blob/master/crates/protocol/src/sign_and_encrypt/mod.rs) and protection is given against replay attacks ([currently using timestamps](https://github.com/entropyxyz/api_key_tdx/blob/cd96b90d1f63e0f3d75bc461e179b094d2cf400e/src/api_keys/api.rs#L81-L87) but this may change to block number or nonces).
 
 **NOTE:** Users must do local key management and keep track of their secret signing key. A stolen secret key can be used by anyone to execute remote API calls, so it's essentially equivalent to stealing the API key in the first place. That is an important matter worthy of its own separate discussion.
 
@@ -95,35 +97,39 @@ For AKS state replication we distinguish two cases:
 
 Flow outline:
 
-- Register on the blockchain as a new AKS node. _TODO: spec this in detail._
-- Ask the blockchain for a list of known AKS nodes.
-- Pick `max(3, total_nodes)` and query them for a hash of their state.
-- Compare the hashes received and if they match, pick one of the nodes and request a full copy of its state.
-- Download the state copy.
-- Confident that any new state can be reconciled with the state copy it downloaded, the new AKS node joins the state replication protocol and receives the last updates.
-- Once in sync, it lets the blockchain know that it's now `READY`.
+- Generate keypairs (Account ID for signing and x25519 pair for encryption).
+- Request a quote nonce from the chain using [`entropy-client::user::request_attestation`](https://docs.rs/entropy-client/0.4.0-rc.1/entropy_client/user/fn.request_attestation.html). This submits an extrinsic which causes the chain to respond with an event containing a nonce which is associated with the keypair used to sign the extrinsic.
+- Generate a TDX quote using the following as input data (which is signed as part of the quote body):
+  - The nonce from the previous step
+  - The account ID and x25519 public key 
+  - ['Context'](https://github.com/entropyxyz/entropy-core/blob/32e5dcc4e8c6532968de28d3cae410ff2c332872/crates/shared/src/attestation.rs#L62) indicating that this quote is intended to be used for registering an API Key Service instance
+- Submit an [`add_box` extrinsic](https://github.com/entropyxyz/entropy-core/blob/32e5dcc4e8c6532968de28d3cae410ff2c332872/pallets/outtie/src/lib.rs#L158) containing the quote, public keys and IP address and port of the instance.  
+- If the chain runtime can validate the quote, this AKS instance is added to the [list of available instances](https://github.com/entropyxyz/entropy-core/blob/32e5dcc4e8c6532968de28d3cae410ff2c332872/pallets/outtie/src/lib.rs#L89)
+- Ask the blockchain for [a list of known AKS nodes](https://github.com/entropyxyz/entropy-core/blob/32e5dcc4e8c6532968de28d3cae410ff2c332872/pallets/outtie/src/lib.rs#L88).
+- Pick the 'closest' node to this node's account ID using the XOR metric, and make an HTTP request to that node to retrieve it's list of API keys (i.e. its state).
+- Once in sync, it lets the blockchain know that it's now `READY` by submitting an extrinsic.
 - Start accepting user requests and propagate own state changes to the other nodes.
 
 A rebooting AKS node is not too different from a new node. It must re-register on the blockchain (the node cannot know how long it has been gone for and perhaps the blockchain deleted it) and even if it probably has a decently recent copy of the state on its local disk, it must still query the other nodes to know how far behind it is. Given the small size of the state it is likely easier to simply treat a re-booting AKS node as a new node.
 
 ### State change propagation
 
-State change syncronization is a big topic and there are many solutions out there, varying greatly in complexity and safety/resilience guarantees offered. What we suggest here is a sketch of "the simplest thing that can work". See issue [#INSERT_ISSUE_NR_HERE] for details.
+State change synchronization is a big topic and there are many solutions out there, varying greatly in complexity and safety/resilience guarantees offered. What we suggest here is a sketch of "the simplest thing that can work". See [#37](https://github.com/entropyxyz/api_key_tdx/issues/37) for details.
 
 - Use a "XOR proximity" metric to assign "neighbours" to AKS nodes; each AKS node tries to find `n` such neighbours, where `n` is a system parameter choosen to work well with the actual/expected number of AKS nodes.
 - The lookup key is the hash of the `secret` + `pubkey` + `baseURL` (and possibly the `ACL` as well, TBD)
 - When users look for an AKS node to deploy a secret to, they calculate the lookup key and choose the AKS node that is "closest".
 - AKS nodes propagate own state updates to its `n` closest neighbours.
 - AKS nodes propagate state updates received from other AKS nodes to `n-1` neighbours (i.e. to all except the one they received the update from)
-- Eventually all nodes will have received the update and stop propagating it.
+- Eventually all nodes within `n` proximity will have received the update and stop propagating it.
 
-See issue [#INSERT_ISSUE_NR_HERE] for more details.
+See issue [#37](https://github.com/entropyxyz/api_key_tdx/issues/37) for more details.
 
 ## Local storage
 
 An AKS node needs local storage for two reasons:
 
-1. To recover quickly after a reboot. If its own state turns out to be recent, it might be able to sync up with the other nodes with just a few messages. As noted above though, it's possibly easier to treat a rebooting AKS node as a new node and simply download the state from one of the other nodes.
+1. To recover quickly after a reboot. Without access to local storage, the booting node must generate fresh keypairs, which in turn means that the account needs to be funded. This means there is a human in the loop and so recovery can potentially take a very long time.
 1. Store ephemeral data about in-flight requests that would be pointless to gossip to other AKS nodes. Consider an AKS node that has successfully executed a request to a remote service ("hey Coinbase, close my account and send all the coins to 0xDEADBEEF"), but the AKS node crashes before it can send the response back to the user. In this case, an AKS node with local storage could recover its state and send the response once it is back online.
 
 ### Local storage encryption
@@ -163,4 +169,4 @@ There are more problems with this approach:
 
 This is probably a very good avenue to explore further. Currently all CPUs that support TDX also support SGX so we can probably re-utilize the infra. The SGX Sealing API has been hacked several times over the years and not all of the vulnerabilities have been definitively patched (last Intel fix was rolled out in Nov 2024). On the other hand SGX is probably roughly as secure as TDX is.
 
-_TODO: find a proper home for the SGX conversation and extend the text with an outline of the flow._
+This is discussed in [entropy-core#1472](https://github.com/entropyxyz/entropy-core/issues/1472).

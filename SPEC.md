@@ -106,7 +106,7 @@ Flow outline:
 - Submit an [`add_box` extrinsic](https://github.com/entropyxyz/entropy-core/blob/32e5dcc4e8c6532968de28d3cae410ff2c332872/pallets/outtie/src/lib.rs#L158) containing the quote, public keys and IP address and port of the instance.  
 - If the chain runtime can validate the quote, this AKS instance is added to the [list of available instances](https://github.com/entropyxyz/entropy-core/blob/32e5dcc4e8c6532968de28d3cae410ff2c332872/pallets/outtie/src/lib.rs#L89)
 - Ask the blockchain for [a list of known AKS nodes](https://github.com/entropyxyz/entropy-core/blob/32e5dcc4e8c6532968de28d3cae410ff2c332872/pallets/outtie/src/lib.rs#L88).
-- Pick the 'closest' node to this node's account ID using the XOR metric, and make an HTTP request to that node to retrieve it's list of API keys.
+- Pick the 'closest' node to this node's account ID using the XOR metric, and make an HTTP request to that node to retrieve it's list of API keys (i.e. its state).
 - Once in sync, it lets the blockchain know that it's now `READY` by submitting an extrinsic.
 - Start accepting user requests and propagate own state changes to the other nodes.
 

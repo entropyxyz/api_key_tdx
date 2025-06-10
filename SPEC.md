@@ -1,5 +1,7 @@
 # API Key Service – permanent storage
 
+Enable clients of Entropy Core to make secure API calls to third party services using API keys stored on a server-side service ("AKS" below), while maintaining privacy and integrity of the API keys and the requests/responses.
+
 ## Setup and assumptions
 
 This document assumes the Entropy blockchain is up and running and has a working set of secret key shares distributed among a set of TDX nodes, each running `entropy-tss` inside Confidential Virtual Machines (CVMs) on untrusted hosts. The CVMs are attested, guaranteeing that all nodes can trust that all their peers run the same software. The blockchain has a registry of known CVMs, and a public API allowing users to query IP addresses and public keys for CVMs.
@@ -27,6 +29,20 @@ To be clear about what the underlying assumptions are for the design outline tha
 - AKS nodes are incentivized. We assume most of them will do their best to stay available and do the work.
 - Permissionless. AKS nodes will come and go willy nilly and there is no central authority that knows who they are or how reliable they are.
 
+### Requirements
+
+* MUST be able to deploy user's API keys to a server-side service, and relay client requests to a third party HTTP service, substituting a placeholder mark for the deployed API key.
+* MUST provide an access control mechanism (ACL) allowing user-defined control over access to a particular deployed API key.
+* MUST maintain privacy and integrity of deployed API keys from both the server operator and external actors.
+* MUST maintain privacy and integrity of relayed HTTP requests and responses from both the server operator and external actors.
+* MUST provide responses to relayed HTTP requests which are near-identical to the original response (maintaining headers, etc).
+* MUST provide a simple client for testing/demonstration purposes.
+* SHOULD have persistent secure storage of API keys across server restarts or upgrades.
+* SHOULD have a logging mechanism.
+* SHOULD have a mechanism by which anyone can independently verify that the server-side executable being run corresponds to a publicly available source code repository.
+
+See issue [#1398](https://github.com/entropyxyz/entropy-core/issues/1398) for background and discussion.
+
 ## Secret data CRUD
 
 Anyone on the internet can query the blockchain for the public key and hostname of an AKS node. Using this information they can establish a secure connection to the AKS node. The untrusted host running the CVM cannot MITM this connection.
@@ -42,11 +58,9 @@ The relevant RPC endpoints exposed by the AKS are:
 - `/delete-secret`: deletes the secret with secret*id `id` (*Note: not implemented yet*).
 - `/make-request`: instructs the AKS to make a remote API call to `remote-url` using the http verb `verb`, with optional POST/PUT payload `payload` and the secret matching the public key used to sign the request payload; the secret is identified by the base URL (extracted from `remote-url`) + user's public key.
 
-**Note:** There are two aspects of ACLs. Firstly, the "ACL proper" that defines which users' public keys are allowed to use a secret; secondly the "usage ACL", defining how a secret can be used, e.g. "only for amounts smaller than `x`" or "only between 10am and 4pm". The full spec of how this works is out of scope for this document.
+**Note:** There are two aspects of ACLs. Firstly, the "ACL proper" that defines which users' public keys are allowed to use a secret; secondly the "usage ACL", defining how a secret can be used, e.g. "only for amounts smaller than `x`" or "only between 10am and 4pm". Refer to issue [#INSERT_ISSUE_NR_HERE] for the details of how this works.
 
-All calls to the AKS from the outside are signed and contain counter measures to replay attacks to stop a snooping cloud operator from recording traffic and replaying it at will. The API responses are encrypted to the end user's public key before they are sent back outside the AKS.
-
-_TODO: Spec the encryption and replay attack counter-measures. This most likley means "Just use TLS"._
+All calls to the AKS from the outside are signed and contain counter measures to replay attacks to stop a snooping cloud operator from recording traffic and replaying it at will. The API responses are encrypted to the end user's public key before they are sent back outside the AKS. Refer to issue [#INSERT_ISSUE_NR_HERE] for the details of how this works.
 
 **NOTE:** Users must do local key management and keep track of their secret signing key. A stolen secret key can be used by anyone to execute remote API calls, so it's essentially equivalent to stealing the API key in the first place. That is an important matter worthy of its own separate discussion.
 
@@ -144,59 +158,6 @@ There are more problems with this approach:
 - Bugs in the AKS code can easily be catastrophic. An AKS node's job is akin to that of a browser (make arbitrary http requests) and a bad bug in http response parsing could lead to data leaks. This scenario has nothing to do with data storage though.
 - Network partitions, while certainly unpleasant, are probably not catastrophic. The AKS nodes can continue operating and serve requests, but they will not be able to replicate the state with the rest of the network. This is a problem for the network as a whole, but not for individual AKS nodes. When the network heals, the AKS nodes can (probably) patch up the state.
 - All AKS network traffic can be watched and even if it's all encrypted, a lot can be learned about users by just analyzing source and destination IP addresses and interaction patterns. Possible mitigations are NYM-style cover traffic with each AKS node acting as a proxy hop for their peers..
-
-# Misc
-
-- Replicate state between AKS nodes or not?
-  - If state is not replicated, how can the service scale? When one AKS node is "full", how can it's secrets be sharded to other nodes?
-  - Eclipse attacks become much more disruptive to users. Same for DoS and partitions: the service effectively goes down.
-- Local persistent storage is either a useful extra or critical, depending on the decision wrt replication.
-  - Local persistent storage is useless without a way to recover the encryption key (we can keep it all in RAM).
-  - Is there any point in Shamir Secret Sharing (or other fancy crypto) of each AKS node's storage encryption key?
-    - Yes, because it would allow the system to survive a corrupt TDX enclave. SGX teaches us that many attacks are possible only with physical access to the machine running the enclave, so even if TDX is broken, it's not a given that all AKS nodes will be compromised immediately.
-    - No, not really: a corrupted TDX enclave can just pretend that "Hey key-recovery-server, evil AWS killed my disk and I had to reboot, can y'all send me the key again please?".
-  - Do all AKS nodes need to store all the secrets?
-    - Yes, because the service needs to be able to scale and the secrets need to be replicated. Also: what is even the point of the AKS service if it's not decentralized, censorship resistant and available?
-    - No, because the service can scale by adding more AKS nodes and manually sharding the secrets among them. When nodes die or are upgraded, users have to manually re-upload their secrets.
-
-# Meeting notes
-
-## June 4th, 2025
-
-### Local storage encryption key
-
-- TSS **must** a way to recover the storage key
-- AKS **may** benefit from a recovery feature
-
-### Assumptions
-
-- tens of AKS nodes, certainly not thousands
-- thousands of users, not millions
-- full state is tens of megabytes, not gigabytes
-- AKS nodes are incentivized and we assume that most of them will do their best to stay up and do the work
-- AKS nodes will come and go willy nilly and there is no central authority that knows who they are or how reliable they are
-
-### Replication
-
-- TSS **may** be useful? For some data but definitely **not** for key shares!
-- AKS **should** be replicated
-  - Actually: replication for AKS is not required given that the secrets stored all have their own repudiation/replacement mechanism from the secret issue (e.g. you can go to Coinbase and get a new key), so an AKS node going down and/or dissapearing is not catastrophic.
-  - If however the team feels replication is a must then here we do it:
-    - TODO: describe how to do it
-    - Nodes joining: they need a full copy of the state
-    - Users adding/changing data: how do changes propagate to other nodes?
-    - Best would be an out-of-the-box solution that can
-      1.  runs in TDX
-      1.  small overhead
-      1.  multi-master replication ready
-      1.  is this Redis? is this SQLITE + something? Is it Postgres? Is it some nifty pubsub solution? RESEARCH topic
-    - …if no such ready made solution can be found we suggest:
-      1.  AKS stores data in an append-only file (encrypted)
-      1.  on request (by new nodes), provide full snapshots of local storage
-      1.  changes to existing data are gossiped as they happen
-      1.  implement automatic merging of changes
-
-Replication for AKS is probably a bit easier to implement if we can rely on a secret key storage solution like SGX Seal API, but does not require it.
 
 ### SGX Sealing API as a keyserver for AKS/TSS
 

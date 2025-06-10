@@ -16,7 +16,7 @@ pub async fn deploy_api_key(
 ) -> Result<StatusCode, Err> {
     let signed_message = encrypted_msg.decrypt(&app_state.x25519_secret, &[])?;
 
-    let user_api_key_info: ChangeApiKeyInfo = serde_json::from_slice(&signed_message.message.0)?;
+    let user_api_key_info: DeployApiKeyInfo = serde_json::from_slice(&signed_message.message.0)?;
 
     let request_author = SubxtAccountId32(*signed_message.account_id().as_ref());
     let current_timestamp = get_current_timestamp()?;

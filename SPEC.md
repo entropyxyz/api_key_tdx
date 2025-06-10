@@ -8,7 +8,7 @@ This document assumes the Entropy blockchain is up and running and has a working
 
 In addition to the threshold signing nodes, there is a set of API Key Service (AKS) nodes running `entropy-aks` inside CVMs; anyone can run AKS nodes.
 
-The AKS nodes are also attested using TDX quotes and the blockchain API/on-chain registry can be queried for IP addresses and public keys in the same way as for the TSS case. 
+The AKS nodes are also attested using TDX quotes and the blockchain API/on-chain registry can be queried for IP addresses and public keys in the same way as for the TSS case.
 
 The software composing the CVM for both TSS and AKS is defined ahead of time as a raw disk image and contains a minimal linux build (x86). Beyond basic OS services like networking, the CVM runs `entropy-tss` or `entropy-aks`.
 

@@ -129,7 +129,7 @@ See issue [#37](https://github.com/entropyxyz/api_key_tdx/issues/37) for more de
 
 An AKS node needs local storage for two reasons:
 
-1. To recover quickly after a reboot. Generating fresh keypairs means that the account needs to be funded by the node operator before it can continue to operator - this means there is a human in the loop and so recovering can potentially take a very long time.
+1. To recover quickly after a reboot. Without access to local storage, the booting node must generate fresh keypairs, which in turn means that the account needs to be funded. This means there is a human in the loop and so recovery can potentially take a very long time.
 1. Store ephemeral data about in-flight requests that would be pointless to gossip to other AKS nodes. Consider an AKS node that has successfully executed a request to a remote service ("hey Coinbase, close my account and send all the coins to 0xDEADBEEF"), but the AKS node crashes before it can send the response back to the user. In this case, an AKS node with local storage could recover its state and send the response once it is back online.
 
 ### Local storage encryption

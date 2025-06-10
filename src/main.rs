@@ -13,7 +13,7 @@ pub mod test_helpers;
 pub mod tests;
 
 use crate::{
-    api_keys::api::{deploy_api_key, make_request, update_secret, delete_secret},
+    api_keys::api::{delete_secret, deploy_api_key, make_request, update_secret},
     health::api::healthz,
     launch::delcare_to_chain,
     node_info::api::{info, version},
@@ -31,7 +31,7 @@ use sp_core::{Pair, sr25519};
 use std::{net::SocketAddr, str::FromStr};
 use x25519_dalek::StaticSecret;
 
-pub use entropy_api_key_service_shared::{DeployApiKeyInfo, SendApiKeyMessage};
+pub use entropy_api_key_service_shared::{ChangeApiKeyInfo, DeployApiKeyInfo, SendApiKeyMessage};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

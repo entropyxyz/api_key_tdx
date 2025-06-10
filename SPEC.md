@@ -114,7 +114,7 @@ A rebooting AKS node is not too different from a new node. It must re-register o
 
 ### State change propagation
 
-State change synchronization is a big topic and there are many solutions out there, varying greatly in complexity and safety/resilience guarantees offered. What we suggest here is a sketch of "the simplest thing that can work". See issue [#INSERT_ISSUE_NR_HERE] for details.
+State change synchronization is a big topic and there are many solutions out there, varying greatly in complexity and safety/resilience guarantees offered. What we suggest here is a sketch of "the simplest thing that can work". See [#37](https://github.com/entropyxyz/api_key_tdx/issues/37) for details.
 
 - Use a "XOR proximity" metric to assign "neighbours" to AKS nodes; each AKS node tries to find `n` such neighbours, where `n` is a system parameter choosen to work well with the actual/expected number of AKS nodes.
 - The lookup key is the hash of the `secret` + `pubkey` + `baseURL` (and possibly the `ACL` as well, TBD)
@@ -123,7 +123,7 @@ State change synchronization is a big topic and there are many solutions out the
 - AKS nodes propagate state updates received from other AKS nodes to `n-1` neighbours (i.e. to all except the one they received the update from)
 - Eventually all nodes within `n` proximity will have received the update and stop propagating it.
 
-See issue [#INSERT_ISSUE_NR_HERE] for more details.
+See issue [#37](https://github.com/entropyxyz/api_key_tdx/issues/37) for more details.
 
 ## Local storage
 

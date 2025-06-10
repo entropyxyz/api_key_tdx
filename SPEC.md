@@ -64,23 +64,18 @@ If each user stores 5 secrets of max 1kb each, with 1kb of ACL data, and 1kb of 
 
 ## State storage
 
-The storage discussion that follows is split into two distinct pain points: the TSS/AKS local storage encryption key and state AKS replication.
+The storage discussion that follows is split into two distinct pain points: the TSS/AKS encrypted local storage and, for AKS, state replication.
 
 ### State replication
 
-TSS and AKS have different needs. For TSS, state replication is not needed at all but AKS nodes should probably replicate state between them.
+TSS and AKS have different needs. For TSS, state replication is not needed at all. For AKS nodes it's the other way around: AKS nodes do need to replicate state between them.
 
-**NOTE**: We need a decision on this: to replicate or not to replicate.
+What would it look like if AKS nodes did **not** replicate their state? Then every node is an island and when the node goes away so does its data and users must re-upload their secret data and all pending external API calls are lost. Users have no way of learning that their selected AKS node is gone so they have to stop what they are doing and fix the problem as they notice: pick a new AKS node and re-upload their secrets (they should probably revoke the old ones and issue new secrets from their API providers). Users can mitigate this somewhat by selecting multiple AKS nodes to store their secrets (and take care of updating/revoking secrets) but it still puts the onus of managing dissappearing nodes on them. The downsides are significant. No resilience, no redundancy, no scaling, no availability guarantees. An un-replicated AKS service is not decentralized, censorship resistant or available.
 
-If AKS nodes do **not** replicate their state, every node is an island. When the node goes away so does its data and users must re-upload their secret data and all pending external API calls are lost.
-Users have no way of knowing that their selected AKS node is gone so they have to stop what they are doing and fix the problem as they notice: pick a new AKS node and re-upload their secrets (they should probably revoke the old ones and issue new secrets from their API providers). Users can mitigate this somewhat by selecting multiple AKS nodes to store their secrets (and take care of updating/revoking secrets) but it still puts the onus of managing dissappearing nodes on them.
-
-In the scenario where AKS nodes **do** replicate the state between them we need to distinguish two cases:
+For AKS state replication we distinguish two cases:
 
 1. A new AKS joining the network. Requires a full copy of the state.
 1. Users making CRUD changes to state, expecting all nodes to see the changes in a reasonable timeframe (seconds?).
-
-_TODO: Assuming AKS nodes do replicate their state, is it still useful for AKS nodes to encrypt their local storage with a unique key? A single stolen key lets the attacker get the full state and all user secrets. Why not use the same key then?_
 
 #### New AKS node joining the network
 
@@ -90,7 +85,7 @@ Flow outline:
 - Ask the blockchain for a list of known AKS nodes.
 - Pick `max(3, total_nodes)` and query them for a hash of their state.
 - Compare the hashes received and if they match, pick one of the nodes and request a full copy of its state.
-- Download&validate the state copy _TODO: what kind of validation is required here?_
+- Download the state copy.
 - Confident that any new state can be reconciled with the state copy it downloaded, the new AKS node joins the state replication protocol and receives the last updates.
 - Once in sync, it lets the blockchain know that it's now `READY`.
 - Start accepting user requests and propagate own state changes to the other nodes.
@@ -99,16 +94,16 @@ A rebooting AKS node is not too different from a new node. It must re-register o
 
 ### State change propagation
 
-State change syncronization is a big topic and there are many solutions out there, varying greatly in complexity and safety/resilience guarantees offered. What we suggest here is a sketch of "the simplest thing that can work".
+State change syncronization is a big topic and there are many solutions out there, varying greatly in complexity and safety/resilience guarantees offered. What we suggest here is a sketch of "the simplest thing that can work". See issue [#INSERT_ISSUE_NR_HERE] for details.
 
 - Use a "XOR proximity" metric to assign "neighbours" to AKS nodes; each AKS node tries to find `n` such neighbours, where `n` is a system parameter choosen to work well with the actual/expected number of AKS nodes.
 - The lookup key is the hash of the `secret` + `pubkey` + `baseURL` (and possibly the `ACL` as well, TBD)
 - When users look for an AKS node to deploy a secret to, they calculate the lookup key and choose the AKS node that is "closest".
 - AKS nodes propagate own state updates to its `n` closest neighbours.
 - AKS nodes propagate state updates received from other AKS nodes to `n-1` neighbours (i.e. to all except the one they received the update from)
-- Eventually all nodes will have received the update and stop propagating it. _TODO: Not sure this is true._
+- Eventually all nodes will have received the update and stop propagating it.
 
-_TODO: Not convinced that the above is actually the simplest possible protocol that can work!_
+See issue [#INSERT_ISSUE_NR_HERE] for more details.
 
 ## Local storage
 

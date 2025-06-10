@@ -38,6 +38,11 @@ enum CliCommand {
         /// URL of the HTTP service associated with this key
         api_url: String,
     },
+    /// Delete an API key from the service
+    DeployApiKey {
+        /// URL of the HTTP service associated with this key
+        api_url: String,
+    },
     /// Make a request substituting `xxxREPLACE_MExxx` with your API key
     MakeRequest {
         /// The full URL for the desired request
@@ -74,6 +79,10 @@ async fn main() -> anyhow::Result<()> {
         CliCommand::DeployApiKey { api_key, api_url } => {
             client.deploy_api_key(api_key, api_url).await?;
             println!("Api key deployed successfully");
+        }
+        CliCommand::DeleteApiKey { api_url } => {
+            client.delete_api_key(api_url).await?;
+            println!("Api key deleted successfully");
         }
         CliCommand::MakeRequest {
             verb,

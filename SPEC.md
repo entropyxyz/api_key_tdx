@@ -6,11 +6,11 @@ This document assumes the Entropy blockchain is up and running and has a working
 
 In addition to the threshold signing nodes, there is a set of API Key Service (AKS) nodes running `entropy-aks` inside CVMs; anyone can run AKS nodes.
 
-The AKS nodes are also attested and the blockchain API/on-chain registry can be queried for IP addresses and public keys in the same way as for the TSS case.
+The AKS nodes are also attested using TDX quotes and the blockchain API/on-chain registry can be queried for IP addresses and public keys in the same way as for the TSS case. 
 
 The software composing the CVM for both TSS and AKS is defined ahead of time as a raw disk image and contains a minimal linux build (x86). Beyond basic OS services like networking, the CVM runs `entropy-tss` or `entropy-aks`.
 
-_TODO: Loop back to this section and describe how the Entropy chain, TSS and AKS interact especially wrt to attestations, fees, RPC-APIs etc._
+Since registering on-chain requires an attestation, and the public keys are given as input data to the quote, we assume that if a node can authenticate using the public keys it registered with, it has made an attestation and can be trusted to be running an endorsed release of the service.
 
 The API Key Service ("AKS" below) has two jobs:
 
@@ -29,9 +29,9 @@ To be clear about what the underlying assumptions are for the design outline tha
 
 ## Secret data CRUD
 
-Anyone on the internet can query the blockchain for the public key and hostname of an AKS node. Using this information they can establish a secure connection to the AKS node. The untrusted host running the CVM cannot MITM this connection.
+Anyone on the internet can query the blockchain for the public keys and hostnames of all active AKS nodes. Using this information they can establish a secure connection to an AKS node. The untrusted host running the CVM cannot MITM this connection, as the secret keys are generated in the CVM and never stored anywhere accessible to the host.
 
-_TODO: Spell out the reasons why this is secure and how it works in detail, e.g. how is the CVM attestation is verified by the user?, why this on-chain pubkey registry is sane, how it's kept up to date and what the difference is between this setup and standard TLS certs._
+It will be possible for clients to independently verify the on-chain attestation of a particular AKS instance before using it (pending [entropy-core#1438](https://github.com/entropyxyz/entropy-core/issues/1438) being resolved).
 
 Users submit and query data to/from the AKS nodes using standard HTTP POST requests with encrypted and signed payloads (encrypted under the AKS node's public key and signed by the user's private key). The untrusted host executing the CVM is assumed to be able to spy on the traffic and manipulate all data going to and from the AKS node inside the CVM, but has no way to decrypt the payload.
 
@@ -46,7 +46,7 @@ The relevant RPC endpoints exposed by the AKS are:
 
 All calls to the AKS from the outside are signed and contain counter measures to replay attacks to stop a snooping cloud operator from recording traffic and replaying it at will. The API responses are encrypted to the end user's public key before they are sent back outside the AKS.
 
-_TODO: Spec the encryption and replay attack counter-measures. This most likley means "Just use TLS"._
+The encryption/authentication used is [the same as entropy-tss uses](https://github.com/entropyxyz/entropy-core/blob/master/crates/protocol/src/sign_and_encrypt/mod.rs) and protection is given against replay attacks ([currently using timestamps](https://github.com/entropyxyz/api_key_tdx/blob/cd96b90d1f63e0f3d75bc461e179b094d2cf400e/src/api_keys/api.rs#L81-L87) but this may change to block number or nonces).
 
 **NOTE:** Users must do local key management and keep track of their secret signing key. A stolen secret key can be used by anyone to execute remote API calls, so it's essentially equivalent to stealing the API key in the first place. That is an important matter worthy of its own separate discussion.
 
@@ -86,27 +86,31 @@ _TODO: Assuming AKS nodes do replicate their state, is it still useful for AKS n
 
 Flow outline:
 
-- Register on the blockchain as a new AKS node. _TODO: spec this in detail._
-- Ask the blockchain for a list of known AKS nodes.
-- Pick `max(3, total_nodes)` and query them for a hash of their state.
-- Compare the hashes received and if they match, pick one of the nodes and request a full copy of its state.
-- Download&validate the state copy _TODO: what kind of validation is required here?_
-- Confident that any new state can be reconciled with the state copy it downloaded, the new AKS node joins the state replication protocol and receives the last updates.
-- Once in sync, it lets the blockchain know that it's now `READY`.
+- Generate keypairs (Account ID for signing and x25519 pair for encryption).
+- Request a quote nonce from the chain using [`entropy-client::user::request_attestation`](https://docs.rs/entropy-client/0.4.0-rc.1/entropy_client/user/fn.request_attestation.html). This submits an extrinsic which causes the chain respond with an event containing a nonce which is associated with the keypair used to sign the extrinsic.
+- Generate a TDX quote using the following as input data (which is signed as part of the quote body):
+  - The nonce from the previous step
+  - The account ID and x25519 public key 
+  - ['Context'](https://github.com/entropyxyz/entropy-core/blob/32e5dcc4e8c6532968de28d3cae410ff2c332872/crates/shared/src/attestation.rs#L62) indicating that this quote is intended to be used for registering an API Key Service instance
+- Submit an [`add_box` extrinsic](https://github.com/entropyxyz/entropy-core/blob/32e5dcc4e8c6532968de28d3cae410ff2c332872/pallets/outtie/src/lib.rs#L158) containing the quote, public keys and IP address and port of the instance.  
+- If the chain runtime can validate the quote, this AKS instance is added to the [list of available instances](https://github.com/entropyxyz/entropy-core/blob/32e5dcc4e8c6532968de28d3cae410ff2c332872/pallets/outtie/src/lib.rs#L89)
+- Ask the blockchain for [a list of known AKS nodes](https://github.com/entropyxyz/entropy-core/blob/32e5dcc4e8c6532968de28d3cae410ff2c332872/pallets/outtie/src/lib.rs#L88).
+- Pick the 'closest' node to this node's account ID using the XOR metric, and make an HTTP request to that node to retrieve it's list of API keys.
+- Once in sync, it lets the blockchain know that it's now `READY` but submitting an extrinsic.
 - Start accepting user requests and propagate own state changes to the other nodes.
 
 A rebooting AKS node is not too different from a new node. It must re-register on the blockchain (the node cannot know how long it has been gone for and perhaps the blockchain deleted it) and even if it probably has a decently recent copy of the state on its local disk, it must still query the other nodes to know how far behind it is. Given the small size of the state it is likely easier to simply treat a re-booting AKS node as a new node.
 
 ### State change propagation
 
-State change syncronization is a big topic and there are many solutions out there, varying greatly in complexity and safety/resilience guarantees offered. What we suggest here is a sketch of "the simplest thing that can work".
+State change synchronization is a big topic and there are many solutions out there, varying greatly in complexity and safety/resilience guarantees offered. What we suggest here is a sketch of "the simplest thing that can work".
 
 - Use a "XOR proximity" metric to assign "neighbours" to AKS nodes; each AKS node tries to find `n` such neighbours, where `n` is a system parameter choosen to work well with the actual/expected number of AKS nodes.
 - The lookup key is the hash of the `secret` + `pubkey` + `baseURL` (and possibly the `ACL` as well, TBD)
 - When users look for an AKS node to deploy a secret to, they calculate the lookup key and choose the AKS node that is "closest".
 - AKS nodes propagate own state updates to its `n` closest neighbours.
 - AKS nodes propagate state updates received from other AKS nodes to `n-1` neighbours (i.e. to all except the one they received the update from)
-- Eventually all nodes will have received the update and stop propagating it. _TODO: Not sure this is true._
+- Eventually all nodes within `n` proximity will have received the update and stop propagating it.
 
 _TODO: Not convinced that the above is actually the simplest possible protocol that can work!_
 
@@ -114,7 +118,7 @@ _TODO: Not convinced that the above is actually the simplest possible protocol t
 
 An AKS node needs local storage for two reasons:
 
-1. To recover quickly after a reboot. If its own state turns out to be recent, it might be able to sync up with the other nodes with just a few messages. As noted above though, it's possibly easier to treat a rebooting AKS node as a new node and simply download the state from one of the other nodes.
+1. To recover quickly after a reboot. Generating fresh keypairs means that the account needs to be funded by the node operator before it can continue to operator - this means there is a human in the loop and so recovering can potentially take a very long time.
 1. Store ephemeral data about in-flight requests that would be pointless to gossip to other AKS nodes. Consider an AKS node that has successfully executed a request to a remote service ("hey Coinbase, close my account and send all the coins to 0xDEADBEEF"), but the AKS node crashes before it can send the response back to the user. In this case, an AKS node with local storage could recover its state and send the response once it is back online.
 
 ### Local storage encryption
@@ -163,45 +167,6 @@ There are more problems with this approach:
   - Do all AKS nodes need to store all the secrets?
     - Yes, because the service needs to be able to scale and the secrets need to be replicated. Also: what is even the point of the AKS service if it's not decentralized, censorship resistant and available?
     - No, because the service can scale by adding more AKS nodes and manually sharding the secrets among them. When nodes die or are upgraded, users have to manually re-upload their secrets.
-
-# Meeting notes
-
-## June 4th, 2025
-
-### Local storage encryption key
-
-- TSS **must** a way to recover the storage key
-- AKS **may** benefit from a recovery feature
-
-### Assumptions
-
-- tens of AKS nodes, certainly not thousands
-- thousands of users, not millions
-- full state is tens of megabytes, not gigabytes
-- AKS nodes are incentivized and we assume that most of them will do their best to stay up and do the work
-- AKS nodes will come and go willy nilly and there is no central authority that knows who they are or how reliable they are
-
-### Replication
-
-- TSS **may** be useful? For some data but definitely **not** for key shares!
-- AKS **should** be replicated
-  - Actually: replication for AKS is not required given that the secrets stored all have their own repudiation/replacement mechanism from the secret issue (e.g. you can go to Coinbase and get a new key), so an AKS node going down and/or dissapearing is not catastrophic.
-  - If however the team feels replication is a must then here we do it:
-    - TODO: describe how to do it
-    - Nodes joining: they need a full copy of the state
-    - Users adding/changing data: how do changes propagate to other nodes?
-    - Best would be an out-of-the-box solution that can
-      1.  runs in TDX
-      1.  small overhead
-      1.  multi-master replication ready
-      1.  is this Redis? is this SQLITE + something? Is it Postgres? Is it some nifty pubsub solution? RESEARCH topic
-    - …if no such ready made solution can be found we suggest:
-      1.  AKS stores data in an append-only file (encrypted)
-      1.  on request (by new nodes), provide full snapshots of local storage
-      1.  changes to existing data are gossiped as they happen
-      1.  implement automatic merging of changes
-
-Replication for AKS is probably a bit easier to implement if we can rely on a secret key storage solution like SGX Seal API, but does not require it.
 
 ### SGX Sealing API as a keyserver for AKS/TSS
 

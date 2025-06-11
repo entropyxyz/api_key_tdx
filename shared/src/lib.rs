@@ -12,7 +12,7 @@ pub struct DeployApiKeyInfo {
     pub timestamp: u64,
 }
 
-/// Request payload for the `/update-secret` and `/delete-secret` HTTP route
+/// Request payload for the `/delete-secret` HTTP route
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct DeleteApiKeyInfo {
     /// URL of the service to use it with

@@ -20,6 +20,9 @@ jobs:
       - name: Check production mode compiles
         run: cargo check -F production
 
+      - name: Check client crate compiles
+        run: cargo check -p entropy-api-key-service-client
+
       - name: Get entropy binary from release with `master` tag
         run: |
           docker pull entropyxyz/entropy:master

@@ -9,12 +9,13 @@ use sp_keyring::{AccountKeyring, Sr25519Keyring};
 
 #[tokio::test]
 #[serial]
-async fn test_deploy_api_key() {
+async fn test_deploy_change_and_delte_api_key() {
     let app_state = setup_client().await;
     let one = AccountKeyring::One;
 
     let api_url = "https://github.com/".to_string();
     let api_key = "test".to_string();
+    let api_key_2 = "test_2".to_string();
 
     let client = make_test_client(&app_state, &one);
 
@@ -31,11 +32,33 @@ async fn test_deploy_api_key() {
 
     assert_eq!(
         app_state
-            .read_from_api_keys(&(one.pair().public().0, api_url_mock))
+            .read_from_api_keys(&(one.pair().public().0, api_url_mock.clone()))
             .unwrap()
             .unwrap(),
         api_key
-    )
+    );
+
+    client
+        .deploy_api_key(api_key_2.clone(), api_url.clone())
+        .await
+        .unwrap();
+
+    assert_eq!(
+        app_state
+            .read_from_api_keys(&(one.pair().public().0, api_url_mock.clone()))
+            .unwrap()
+            .unwrap(),
+        api_key_2
+    );
+
+    client.delete_api_key(api_url.clone()).await.unwrap();
+
+    assert!(
+        app_state
+            .read_from_api_keys(&(one.pair().public().0, api_url_mock))
+            .unwrap()
+            .is_none(),
+    );
 }
 
 #[tokio::test]

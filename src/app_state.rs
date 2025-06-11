@@ -75,6 +75,17 @@ impl AppState {
         Ok(())
     }
 
+    /// Delete from api key
+    pub fn delete_from_api_keys(&self, key: ([u8; 32], String)) -> Result<(), Err> {
+        self.clear_poisioned_api_keys();
+        let mut api_keys = self
+            .api_keys
+            .write()
+            .map_err(|e| Err::PosionError(e.to_string()))?;
+        api_keys.remove(&key);
+        Ok(())
+    }
+
     /// Reads from api key will error if no value, call exists_in_request_limit to check
     pub fn read_from_api_keys(&self, key: &([u8; 32], String)) -> Result<Option<String>, Err> {
         self.clear_poisioned_api_keys();

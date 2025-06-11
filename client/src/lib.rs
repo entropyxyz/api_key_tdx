@@ -2,7 +2,7 @@
 pub mod errors;
 pub use entropy_client::chain_api::entropy::runtime_types::pallet_outtie::module::OuttieServerInfo;
 
-use entropy_api_key_service_shared::{DeployApiKeyInfo, SendApiKeyMessage};
+use entropy_api_key_service_shared::{DeleteApiKeyInfo, DeployApiKeyInfo, SendApiKeyMessage};
 use entropy_client::{
     chain_api::{
         EntropyConfig,
@@ -100,6 +100,29 @@ impl ApiKeyServiceClient {
 
         let response = self
             .send_http_request("/deploy-api-key".to_string(), request)
+            .await?;
+
+        let response_status = response.status();
+        match response_status {
+            reqwest::StatusCode::OK => Ok(()),
+            _ => Err(ClientError::BadResponse(
+                response_status,
+                response.text().await.unwrap_or_default(),
+            )),
+        }
+    }
+
+    /// Deletes an API key
+    pub async fn delete_api_key(&self, api_url: String) -> Result<(), ClientError> {
+        let user_info = DeleteApiKeyInfo {
+            api_url,
+            timestamp: get_current_timestamp()?,
+        };
+
+        let request = serde_json::to_vec(&user_info)?;
+
+        let response = self
+            .send_http_request("/delete-secret".to_string(), request)
             .await?;
 
         let response_status = response.status();

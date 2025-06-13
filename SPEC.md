@@ -8,7 +8,7 @@ This document assumes the Entropy blockchain is up and running and has a working
 
 In addition to the threshold signing nodes, there is a set of API Key Service (AKS) nodes running `entropy-aks` inside CVMs; anyone can run AKS nodes.
 
-The AKS nodes are also attested using TDX quotes and the blockchain API/on-chain registry can be queried for IP addresses and public keys in the same way as for the TSS case.
+The AKS nodes are attested using TDX quotes. There is a blockchain API/on-chain registry can be queried for IP addresses and public keys in the same way as for the TSS case. See issue [#TODO_INSERT_ISSUE_HERE] for details on this.
 
 The software composing the CVM for both TSS and AKS is defined ahead of time as a raw disk image and contains a minimal linux build (x86). Beyond basic OS services like networking, the CVM runs `entropy-tss` or `entropy-aks`.
 
@@ -55,12 +55,12 @@ The relevant RPC endpoints exposed by the AKS are:
 
 - `/deploy-api-key`: adds a new secret. This is associated with a given base URL of the service it is for, and the public key of the user who signs the request body. The base URL + user's pubkey constitutes the identifier for the secret.
 - `/update-secret`: updates the secret and/or ACL with secret*id `id` (*Note: not implemented yet*).
-- `/delete-secret`: deletes the secret with secret*id `id` (*Note: not implemented yet*).
+- `/delete-secret`: deletes the secret with secret*id `id`.
 - `/make-request`: instructs the AKS to make a remote API call to `remote-url` using the http verb `verb`, with optional POST/PUT payload `payload` and the secret matching the public key used to sign the request payload; the secret is identified by the base URL (extracted from `remote-url`) + user's public key.
 
 **Note:** There are two aspects of ACLs. Firstly, the "ACL proper" that defines which users' public keys are allowed to use a secret; secondly the "usage ACL", defining how a secret can be used, e.g. "only for amounts smaller than `x`" or "only between 10am and 4pm". Refer to issue [#INSERT_ISSUE_NR_HERE] for the details of how this works.
 
-All calls to the AKS from the outside are signed and contain counter measures to replay attacks to stop a snooping cloud operator from recording traffic and replaying it at will. The API responses are encrypted to the end user's public key before they are sent back outside the AKS.
+All calls to the AKS from the outside are signed and contain counter measures to replay attacks to stop a snooping cloud operator from recording traffic and replaying it at will. The API responses are encrypted to the end user's public key before they are sent back outside the AKS. Refer to issue [#INSERT_ISSUE_NR_HERE] for the details of how this works.
 
 The encryption/authentication used is [the same as entropy-tss uses](https://github.com/entropyxyz/entropy-core/blob/master/crates/protocol/src/sign_and_encrypt/mod.rs) and protection is given against replay attacks ([currently using timestamps](https://github.com/entropyxyz/api_key_tdx/blob/cd96b90d1f63e0f3d75bc461e179b094d2cf400e/src/api_keys/api.rs#L81-L87) but this may change to block number or nonces).
 
@@ -101,9 +101,9 @@ Flow outline:
 - Request a quote nonce from the chain using [`entropy-client::user::request_attestation`](https://docs.rs/entropy-client/0.4.0-rc.1/entropy_client/user/fn.request_attestation.html). This submits an extrinsic which causes the chain to respond with an event containing a nonce which is associated with the keypair used to sign the extrinsic.
 - Generate a TDX quote using the following as input data (which is signed as part of the quote body):
   - The nonce from the previous step
-  - The account ID and x25519 public key 
+  - The account ID and x25519 public key
   - ['Context'](https://github.com/entropyxyz/entropy-core/blob/32e5dcc4e8c6532968de28d3cae410ff2c332872/crates/shared/src/attestation.rs#L62) indicating that this quote is intended to be used for registering an API Key Service instance
-- Submit an [`add_box` extrinsic](https://github.com/entropyxyz/entropy-core/blob/32e5dcc4e8c6532968de28d3cae410ff2c332872/pallets/outtie/src/lib.rs#L158) containing the quote, public keys and IP address and port of the instance.  
+- Submit an [`add_box` extrinsic](https://github.com/entropyxyz/entropy-core/blob/32e5dcc4e8c6532968de28d3cae410ff2c332872/pallets/outtie/src/lib.rs#L158) containing the quote, public keys and IP address and port of the instance.
 - If the chain runtime can validate the quote, this AKS instance is added to the [list of available instances](https://github.com/entropyxyz/entropy-core/blob/32e5dcc4e8c6532968de28d3cae410ff2c332872/pallets/outtie/src/lib.rs#L89)
 - Ask the blockchain for [a list of known AKS nodes](https://github.com/entropyxyz/entropy-core/blob/32e5dcc4e8c6532968de28d3cae410ff2c332872/pallets/outtie/src/lib.rs#L88).
 - Pick the 'closest' node to this node's account ID using the XOR metric, and make an HTTP request to that node to retrieve it's list of API keys (i.e. its state).

@@ -147,6 +147,7 @@ impl ApiKeyServiceClient {
         let send_api_key_message = SendApiKeyMessage {
             request_body,
             http_verb: request.method().as_str().to_lowercase().to_string(),
+            http_headers: vec![("Content-Type".to_string(), "application/json".to_string())],
             api_url: request
                 .url()
                 .as_str()

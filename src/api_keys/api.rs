@@ -81,13 +81,17 @@ pub async fn make_request(
     let response = match user_make_request_info.http_verb.as_str() {
         "get" => Ok(client.get(url).send().await?),
         "post" => {
-            let result = client
+            let mut request = client
                 .post(url)
-                .header("Content-Type", "application/json")
                 .header("Authorization", format!("Bearer {}", &api_key_info))
-                .body(user_make_request_info.request_body)
-                .send()
-                .await?;
+                .body(user_make_request_info.request_body);
+
+            for header in user_make_request_info.http_headers {
+                let first = header.0.replace("xxxREPLACE_MExxx", &api_key_info);
+                let second = header.1.replace("xxxREPLACE_MExxx", &api_key_info);
+                request = request.header(first, second);
+            }
+            let result = request.send().await?;
             Ok(result)
         }
         _ => Err(Err::UnsupportedHttpVerb),

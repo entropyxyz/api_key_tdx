@@ -139,6 +139,7 @@ impl ApiKeyServiceClient {
     pub async fn make_request(
         &self,
         request: reqwest::Request,
+        http_headers: Vec<(String, String)>,
     ) -> Result<reqwest::Response, ClientError> {
         let request_body = match request.body() {
             Some(body) => String::from_utf8(body.as_bytes().unwrap_or_default().to_vec())?,
@@ -147,7 +148,7 @@ impl ApiKeyServiceClient {
         let send_api_key_message = SendApiKeyMessage {
             request_body,
             http_verb: request.method().as_str().to_lowercase().to_string(),
-            http_headers: vec![("Content-Type".to_string(), "application/json".to_string())],
+            http_headers,
             api_url: request
                 .url()
                 .as_str()

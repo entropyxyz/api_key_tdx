@@ -79,7 +79,7 @@ async fn test_make_request_get() {
     let mut request = reqwest::Request::new(Method::GET, api_url);
     let body = request.body_mut();
     *body = Some(Body::wrap("test".to_string()));
-    let response = client.make_request(request).await.unwrap();
+    let response = client.make_request(request, vec![]).await.unwrap();
 
     assert_eq!(response.status(), 200);
     assert_eq!(&response.text().await.unwrap()[0..10], "[{\"breeds\"");
@@ -101,7 +101,7 @@ async fn test_make_request_get_with_local_test_server() {
     let mut request = reqwest::Request::new(Method::GET, api_url);
     let body = request.body_mut();
     *body = Some(Body::wrap("test".to_string()));
-    let response = client.make_request(request).await.unwrap();
+    let response = client.make_request(request, vec![]).await.unwrap();
 
     assert_eq!(response.status(), 200);
     assert_eq!(&response.text().await.unwrap(), "Success response");
@@ -123,7 +123,13 @@ async fn test_make_request_post_with_local_test_server() {
     let mut request = reqwest::Request::new(Method::POST, api_url);
     let body = request.body_mut();
     *body = Some(Body::wrap("test".to_string()));
-    let response = client.make_request(request).await.unwrap();
+    let response = client
+        .make_request(
+            request,
+            vec![("api-key".to_string(), "xxxREPLACE_MExxx".to_string())],
+        )
+        .await
+        .unwrap();
 
     assert_eq!(response.status(), 200);
     assert_eq!(

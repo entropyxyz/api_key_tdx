@@ -83,7 +83,7 @@ pub async fn make_request(
         "post" => {
             let mut request = client
                 .post(url)
-                .header("Authorization", format!("Bearer {}", &api_key_info))
+                .header("api-key", &api_key_info)
                 .body(user_make_request_info.request_body);
 
             for header in user_make_request_info.http_headers {

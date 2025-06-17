@@ -39,7 +39,7 @@ enum CliCommand {
         api_url: String,
     },
     /// Delete an API key from the service
-    DeployApiKey {
+    DeleteApiKey {
         /// URL of the HTTP service associated with this key
         api_url: String,
     },
@@ -53,10 +53,22 @@ enum CliCommand {
         /// The request body (UTF8 only)
         #[arg(long)]
         body: Option<String>,
+        // The Headers to be sent to the request ex: "Authorization:Bearer xxx"
+        #[arg(long, value_parser = parse_key_val)]
+        header_request: Option<Vec<(String, String)>>,
         /// header given in the form "name:value". Can be given multiple times.
         #[arg(long)]
         header: Vec<String>,
     },
+}
+
+/// Parses the header request
+fn parse_key_val(s: &str) -> Result<(String, String), String> {
+    let mut parts = s.splitn(2, ':');
+    match (parts.next(), parts.next()) {
+        (Some(k), Some(v)) => Ok((k.to_string(), v.to_string())),
+        _ => Err(format!("invalid KEY:VAL: {}", s)),
+    }
 }
 
 #[tokio::main]
@@ -89,6 +101,7 @@ async fn main() -> anyhow::Result<()> {
             url,
             body,
             header,
+            header_request,
         } => {
             let mut request = Request::new(verb.unwrap_or(Method::GET), url);
 
@@ -116,7 +129,9 @@ async fn main() -> anyhow::Result<()> {
                 );
             }
 
-            let response = client.make_request(request).await?;
+            let response = client
+                .make_request(request, header_request.unwrap_or(vec![]))
+                .await?;
             println!("Response: {response:?}");
         }
     }

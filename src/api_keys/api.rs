@@ -85,8 +85,8 @@ pub async fn make_request(
         let first = key.replace("xxxREPLACE_MExxx", &api_key_info);
         let second = value.replace("xxxREPLACE_MExxx", &api_key_info);
 
-        let header_name = HeaderName::from_bytes(first.as_bytes()).unwrap();
-        let header_value = HeaderValue::from_str(&second).unwrap();
+        let header_name = HeaderName::from_bytes(first.as_bytes())?;
+        let header_value = HeaderValue::from_str(&second)?;
         headers.insert(header_name, header_value);
     }
 

@@ -60,6 +60,10 @@ pub enum Err {
     #[cfg(feature = "production")]
     #[error("Quote parse: {0}")]
     QuoteParse(#[from] tdx_quote::QuoteParseError),
+    #[error("Invalid Header name {0}")]
+    InvalidHeaderName(#[from] reqwest::header::InvalidHeaderName),
+    #[error("Invalid Header value {0}")]
+    InvalidHeaderValue(#[from] reqwest::header::InvalidHeaderValue),
 }
 
 impl IntoResponse for Err {

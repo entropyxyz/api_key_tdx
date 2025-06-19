@@ -3,6 +3,7 @@ use crate::{
 };
 use axum::{Json, extract::State, http::StatusCode};
 use entropy_protocol::sign_and_encrypt::EncryptedSignedMessage;
+use reqwest::header::{HeaderMap, HeaderName, HeaderValue};
 use std::time::{SystemTime, UNIX_EPOCH};
 use subxt::utils::AccountId32 as SubxtAccountId32;
 use url::Url;
@@ -78,16 +79,27 @@ pub async fn make_request(
     let url = user_make_request_info
         .api_url
         .replace("xxxREPLACE_MExxx", &api_key_info);
+
+    let mut headers = HeaderMap::new();
+    for (key, value) in &user_make_request_info.http_headers {
+        let first = key.replace("xxxREPLACE_MExxx", &api_key_info);
+        let second = value.replace("xxxREPLACE_MExxx", &api_key_info);
+
+        let header_name = HeaderName::from_bytes(first.as_bytes())?;
+        let header_value = HeaderValue::from_str(&second)?;
+        headers.insert(header_name, header_value);
+    }
+
     let response = match user_make_request_info.http_verb.as_str() {
-        "get" => Ok(client.get(url).send().await?),
+        "get" => Ok(client.get(url).headers(headers).send().await?),
         "post" => {
             let result = client
                 .post(url)
-                .header("Content-Type", "application/json")
-                .header("Authorization", format!("Bearer {}", &api_key_info))
+                .headers(headers)
                 .body(user_make_request_info.request_body)
                 .send()
                 .await?;
+
             Ok(result)
         }
         _ => Err(Err::UnsupportedHttpVerb),

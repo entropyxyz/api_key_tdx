@@ -28,6 +28,8 @@ pub struct SendApiKeyMessage {
     pub request_body: String,
     /// The HTTP verb to use
     pub http_verb: String,
+    /// The HTTP headers to use
+    pub http_headers: Vec<(String, String)>,
     /// The URL for the HTTP request
     pub api_url: String,
     /// Current unix time in seconds

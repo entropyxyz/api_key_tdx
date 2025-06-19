@@ -79,7 +79,7 @@ async fn test_make_request_get() {
     let mut request = reqwest::Request::new(Method::GET, api_url);
     let body = request.body_mut();
     *body = Some(Body::wrap("test".to_string()));
-    let response = client.make_request(request).await.unwrap();
+    let response = client.make_request(request, vec![]).await.unwrap();
 
     assert_eq!(response.status(), 200);
     assert_eq!(&response.text().await.unwrap()[0..10], "[{\"breeds\"");
@@ -101,10 +101,41 @@ async fn test_make_request_get_with_local_test_server() {
     let mut request = reqwest::Request::new(Method::GET, api_url);
     let body = request.body_mut();
     *body = Some(Body::wrap("test".to_string()));
-    let response = client.make_request(request).await.unwrap();
+    let response = client.make_request(request, vec![]).await.unwrap();
 
     assert_eq!(response.status(), 200);
     assert_eq!(&response.text().await.unwrap(), "Success response");
+}
+
+#[tokio::test]
+#[serial]
+async fn test_make_request_post_with_local_test_server() {
+    let app_state = setup_client().await;
+    let one = AccountKeyring::One;
+    let api_url_string = "http://127.0.0.1:3002/protected";
+    let api_key = "some-secret".to_string();
+    let api_url = Url::parse(api_url_string).unwrap();
+    let api_url_mock = api_url.host_str().unwrap().to_string();
+    let _ = app_state.write_to_api_keys((one.pair().public().0, api_url_mock), api_key);
+
+    let client = make_test_client(&app_state, &one);
+
+    let mut request = reqwest::Request::new(Method::POST, api_url);
+    let body = request.body_mut();
+    *body = Some(Body::wrap("test".to_string()));
+    let response = client
+        .make_request(
+            request,
+            vec![("api-key".to_string(), "xxxREPLACE_MExxx".to_string())],
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(response.status(), 200);
+    assert_eq!(
+        &response.text().await.unwrap(),
+        "Succcess response - input was "
+    );
 }
 
 // TODO: negative test for deploy key and make request

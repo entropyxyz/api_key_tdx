@@ -1,7 +1,7 @@
 use crate::launch::delcare_to_chain;
 use entropy_api_key_service_client::get_api_key_servers;
 use entropy_client::chain_api::{
-    entropy::runtime_types::pallet_outtie::module::JoiningOuttieServerInfo, get_api, get_rpc,
+    entropy::runtime_types::pallet_forest::module::JoiningForestServerInfo, get_api, get_rpc,
 };
 use entropy_testing_utils::substrate_context::test_node_process;
 use serial_test::serial;
@@ -18,7 +18,7 @@ async fn test_declare() {
 
     let endpoint: Vec<u8> = "test".into();
     let x25519_public_key = [0; 32];
-    let server_info = JoiningOuttieServerInfo {
+    let server_info = JoiningForestServerInfo {
         endpoint: endpoint.clone(),
         x25519_public_key: x25519_public_key.clone(),
     };
@@ -42,7 +42,7 @@ async fn test_declare_times_out() {
     let rpc = get_rpc(&cxt.ws_url).await.unwrap();
     let (pair, _seed) = sr25519::Pair::generate();
 
-    let server_info = JoiningOuttieServerInfo {
+    let server_info = JoiningForestServerInfo {
         endpoint: "test".into(),
         x25519_public_key: [0u8; 32],
     };

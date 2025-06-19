@@ -1,6 +1,6 @@
 //! Simple client library for the API Key Service
 pub mod errors;
-pub use entropy_client::chain_api::entropy::runtime_types::pallet_outtie::module::OuttieServerInfo;
+pub use entropy_client::chain_api::entropy::runtime_types::pallet_forest::module::ForestServerInfo;
 
 use entropy_api_key_service_shared::{DeleteApiKeyInfo, DeployApiKeyInfo, SendApiKeyMessage};
 use entropy_client::{
@@ -45,7 +45,7 @@ impl ApiKeyServiceClient {
 
     /// Create a new client with given server details
     pub fn new_with_service_info(
-        api_key_service_info: OuttieServerInfo,
+        api_key_service_info: ForestServerInfo,
         pair: sr25519::Pair,
     ) -> Result<Self, ClientError> {
         Ok(Self {
@@ -69,8 +69,8 @@ impl ApiKeyServiceClient {
             .choose(&mut rng)
             .ok_or(ClientError::NoAvailableApiKeyServices)?;
 
-        // TODO derive Clone on OuttieServerInfo so that this manual clone is not needed
-        let api_key_service_info = OuttieServerInfo {
+        // TODO derive Clone on ForestServerInfo so that this manual clone is not needed
+        let api_key_service_info = ForestServerInfo {
             x25519_public_key: api_key_service_info.x25519_public_key.clone(),
             endpoint: api_key_service_info.endpoint.clone(),
             provisioning_certification_key: BoundedVec(
@@ -202,12 +202,12 @@ pub fn get_current_timestamp() -> Result<u64, ClientError> {
 pub async fn get_api_key_servers(
     api: &OnlineClient<EntropyConfig>,
     rpc: &LegacyRpcMethods<EntropyConfig>,
-) -> Result<Vec<(AccountId32, OuttieServerInfo)>, ClientError> {
+) -> Result<Vec<(AccountId32, ForestServerInfo)>, ClientError> {
     let block_hash = rpc
         .chain_get_block_hash(None)
         .await?
         .ok_or(ClientError::BlockHash)?;
-    let storage_address = entropy::storage().outtie().api_boxes_iter();
+    let storage_address = entropy::storage().forest().api_trees_iter();
     let mut iter = api.storage().at(block_hash).iter(storage_address).await?;
     let mut servers = Vec::new();
     while let Some(Ok(kv)) = iter.next().await {

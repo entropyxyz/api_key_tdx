@@ -44,7 +44,7 @@ entropy-api-key-service-shared = { version="0.0.1", path="./shared" }
 
 [dev-dependencies]
 serial_test ="3.2.0"
-sp-keyring        ="39.0.0"
+sp-keyring        ="41.0.0"
 entropy-api-key-service-client = { version="0.0.1", path="./client" }
 
 [build-dependencies]

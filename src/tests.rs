@@ -6,12 +6,12 @@ use entropy_client::chain_api::{
 use entropy_testing_utils::substrate_context::test_node_process;
 use serial_test::serial;
 use sp_core::{Pair, sr25519};
-use sp_keyring::AccountKeyring;
+use sp_keyring::sr25519::Keyring;
 
 #[tokio::test]
 #[serial]
 async fn test_declare() {
-    let alice = AccountKeyring::Alice;
+    let alice = Keyring::Alice;
     let cxt = test_node_process().await;
     let api = get_api(&cxt.ws_url).await.unwrap();
     let rpc = get_rpc(&cxt.ws_url).await.unwrap();
@@ -48,11 +48,12 @@ async fn test_declare_times_out() {
     };
 
     let result = delcare_to_chain(&api, &rpc, server_info, &pair, None).await;
+
     // Random pair does not have funds and should give an error
     assert!(
         result
             .unwrap_err()
             .to_string()
-            .contains("Inability to pay some fees (e.g. account balance too low)")
+            .contains("User error: Invalid Transaction (1010)")
     );
 }

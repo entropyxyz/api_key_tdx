@@ -207,7 +207,7 @@ pub async fn get_api_key_servers(
         .chain_get_block_hash(None)
         .await?
         .ok_or(ClientError::BlockHash)?;
-    let storage_address = entropy::storage().forest().api_trees_iter();
+    let storage_address = entropy::storage().forest().trees_iter();
     let mut iter = api.storage().at(block_hash).iter(storage_address).await?;
     let mut servers = Vec::new();
     while let Some(Ok(kv)) = iter.next().await {

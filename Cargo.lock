@@ -1953,7 +1953,7 @@ dependencies = [
 [[package]]
 name = "entropy-client"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=rename-outtie-to-forest#73143b401cafed929725aac5806accdb1602e534"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=master#e312a1991c7c947f52696303b8ab4b9bdacdf2be"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
@@ -1984,7 +1984,7 @@ dependencies = [
 [[package]]
 name = "entropy-kvdb"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=rename-outtie-to-forest#73143b401cafed929725aac5806accdb1602e534"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=master#e312a1991c7c947f52696303b8ab4b9bdacdf2be"
 dependencies = [
  "bincode",
  "chacha20poly1305 0.9.1",
@@ -2029,7 +2029,7 @@ dependencies = [
 [[package]]
 name = "entropy-protocol"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=rename-outtie-to-forest#73143b401cafed929725aac5806accdb1602e534"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=master#e312a1991c7c947f52696303b8ab4b9bdacdf2be"
 dependencies = [
  "async-trait",
  "axum",
@@ -2065,7 +2065,7 @@ dependencies = [
 [[package]]
 name = "entropy-shared"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=rename-outtie-to-forest#73143b401cafed929725aac5806accdb1602e534"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=master#e312a1991c7c947f52696303b8ab4b9bdacdf2be"
 dependencies = [
  "blake2",
  "hex-literal",
@@ -2086,7 +2086,7 @@ dependencies = [
 [[package]]
 name = "entropy-testing-utils"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=rename-outtie-to-forest#73143b401cafed929725aac5806accdb1602e534"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=master#e312a1991c7c947f52696303b8ab4b9bdacdf2be"
 dependencies = [
  "axum",
  "entropy-kvdb",
@@ -2115,7 +2115,7 @@ dependencies = [
 [[package]]
 name = "entropy-tss"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=rename-outtie-to-forest#73143b401cafed929725aac5806accdb1602e534"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=master#e312a1991c7c947f52696303b8ab4b9bdacdf2be"
 dependencies = [
  "anyhow",
  "axum",

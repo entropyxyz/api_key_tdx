@@ -64,6 +64,8 @@ pub enum Err {
     InvalidHeaderName(#[from] reqwest::header::InvalidHeaderName),
     #[error("Invalid Header value {0}")]
     InvalidHeaderValue(#[from] reqwest::header::InvalidHeaderValue),
+    #[error("subxt rpc error: {0}")]
+    SubxtRpcError(#[from] subxt::ext::subxt_rpcs::Error),
 }
 
 impl IntoResponse for Err {

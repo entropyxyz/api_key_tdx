@@ -8,7 +8,7 @@ use crate::{
 use entropy_api_key_service_client::ApiKeyServiceClient;
 use rand_core::OsRng;
 use sp_core::{Pair, sr25519};
-use sp_keyring::Sr25519Keyring;
+use sp_keyring::sr25519::Keyring;
 use test_server::start_test_api_server;
 use x25519_dalek::StaticSecret;
 
@@ -37,7 +37,7 @@ pub async fn setup_client() -> AppState {
 }
 
 /// Returns a client for the test server
-pub fn make_test_client(app_state: &AppState, keyring: &Sr25519Keyring) -> ApiKeyServiceClient {
+pub fn make_test_client(app_state: &AppState, keyring: &Keyring) -> ApiKeyServiceClient {
     ApiKeyServiceClient::new(
         "http://127.0.0.1:3001".to_string(),
         app_state.x25519_public_key(),

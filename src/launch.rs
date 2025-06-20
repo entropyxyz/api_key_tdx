@@ -3,7 +3,7 @@ use backoff::ExponentialBackoff;
 use entropy_client::{
     chain_api::{
         EntropyConfig,
-        entropy::{self, runtime_types::pallet_outtie::module::JoiningOuttieServerInfo},
+        entropy::{self, runtime_types::pallet_forest::module::JoiningForestServerInfo},
     },
     request_attestation,
 };
@@ -22,13 +22,13 @@ use subxt_core::{storage::address::Address, utils::Yes};
 /// Blocks a transaction is valid for
 pub const MORTALITY_BLOCKS: u64 = 32;
 
-/// Declares an itself to the chain by calling add box to the outtie pallet
+/// Declares an itself to the chain by calling add box to the forest pallet
 /// Will log and backoff if account does not have funds, assumption is that
 /// deployer will see this and fund the account to complete the spin up process
 pub async fn delcare_to_chain(
     api: &OnlineClient<EntropyConfig>,
     rpc: &LegacyRpcMethods<EntropyConfig>,
-    server_info: JoiningOuttieServerInfo,
+    server_info: JoiningForestServerInfo,
     pair: &sr25519::Pair,
     nonce_option: Option<u32>,
 ) -> Result<(), Err> {
@@ -42,24 +42,29 @@ pub async fn delcare_to_chain(
     };
 
     let nonce = request_attestation(api, rpc, pair).await?;
-    let quote = create_quote(nonce, pair.public().into(), server_info.x25519_public_key).await?;
+    let quote = create_quote(
+        nonce,
+        SubxtAccountId32(pair.public().0),
+        server_info.x25519_public_key,
+    )
+    .await?;
 
-    let add_box_call = entropy::tx().outtie().add_box(server_info, quote);
-    let add_box = || async {
+    let add_tree_call = entropy::tx().forest().add_tree(server_info, quote);
+    let add_tree = || async {
         println!(
-            "attempted to make add_box tx, If failed probably add funds to {:?}",
+            "attempted to make add_tree tx, If failed probably add funds to {:?}",
             pair.public().to_ss58check()
         );
         let in_block =
-            submit_transaction_with_pair(api, rpc, &pair, &add_box_call, nonce_option).await?;
+            submit_transaction_with_pair(api, rpc, &pair, &add_tree_call, nonce_option).await?;
         let _result_event = in_block
-            .find_first::<entropy::outtie::events::BoxAdded>()
+            .find_first::<entropy::forest::events::TreeAdded>()
             .map_err(|_| Err::NoEvent)?
             .ok_or(Err::NoEvent)?;
         Ok(())
     };
     // TODO: maybe add loggings here if fialed
-    backoff::future::retry(backoff.clone(), add_box)
+    backoff::future::retry(backoff.clone(), add_tree)
         .await
         .map_err(|_| Err::TimedOut)?;
     Ok(())
@@ -90,9 +95,8 @@ pub async fn submit_transaction<Call: Payload, S: Signer<EntropyConfig>>(
         api.runtime_api().at(block_hash).call(nonce_call).await?
     };
 
-    let latest_block = api.blocks().at_latest().await?;
     let tx_params = Params::new()
-        .mortal(latest_block.header(), MORTALITY_BLOCKS)
+        .mortal(MORTALITY_BLOCKS)
         .nonce(nonce.into())
         .build();
     let mut tx = api
@@ -178,10 +182,6 @@ impl Sr25519Signer {
 impl Signer<EntropyConfig> for Sr25519Signer {
     fn account_id(&self) -> <EntropyConfig as Config>::AccountId {
         self.account_id.clone()
-    }
-
-    fn address(&self) -> <EntropyConfig as Config>::Address {
-        self.account_id.clone().into()
     }
 
     fn sign(&self, signer_payload: &[u8]) -> <EntropyConfig as Config>::Signature {

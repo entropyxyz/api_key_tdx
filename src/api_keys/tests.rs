@@ -5,13 +5,13 @@ use crate::test_helpers::{make_test_client, setup_client};
 use entropy_protocol::sign_and_encrypt::EncryptedSignedMessage;
 use reqwest::{Body, Method, Url};
 use sp_core::Pair;
-use sp_keyring::{AccountKeyring, Sr25519Keyring};
+use sp_keyring::sr25519::Keyring;
 
 #[tokio::test]
 #[serial]
 async fn test_deploy_change_and_delte_api_key() {
     let app_state = setup_client().await;
-    let one = AccountKeyring::One;
+    let one = Keyring::One;
 
     let api_url = "https://github.com/".to_string();
     let api_key = "test".to_string();
@@ -65,7 +65,7 @@ async fn test_deploy_change_and_delte_api_key() {
 #[serial]
 async fn test_make_request_get() {
     let app_state = setup_client().await;
-    let one = AccountKeyring::One;
+    let one = Keyring::One;
     let api_url_string = "https://api.thecatapi.com/v1/images/search?limit=1&breed_ids=beng&api_key=xxxREPLACE_MExxx";
     let api_key =
         "live_MdrxblW1YgdnmuI3jVSJNLSqcdljuF3T2PDy26hWXk7fROoojH479EkhrDhYJIy4".to_string();
@@ -89,7 +89,7 @@ async fn test_make_request_get() {
 #[serial]
 async fn test_make_request_get_with_local_test_server() {
     let app_state = setup_client().await;
-    let one = AccountKeyring::One;
+    let one = Keyring::One;
     let api_url_string = "http://127.0.0.1:3002/protected?api-key=xxxREPLACE_MExxx";
     let api_key = "some-secret".to_string();
     let api_url = Url::parse(api_url_string).unwrap();
@@ -111,7 +111,7 @@ async fn test_make_request_get_with_local_test_server() {
 #[serial]
 async fn test_make_request_post_with_local_test_server() {
     let app_state = setup_client().await;
-    let one = AccountKeyring::One;
+    let one = Keyring::One;
     let api_url_string = "http://127.0.0.1:3002/protected";
     let api_key = "some-secret".to_string();
     let api_url = Url::parse(api_url_string).unwrap();
@@ -160,7 +160,7 @@ async fn test_stale_check() {
 pub async fn submit_transaction_request(
     box_url_and_key: (String, [u8; 32]),
     signature_request: Vec<u8>,
-    keyring: Sr25519Keyring,
+    keyring: Keyring,
 ) -> std::result::Result<reqwest::Response, reqwest::Error> {
     let mock_client = reqwest::Client::new();
     let signed_message =

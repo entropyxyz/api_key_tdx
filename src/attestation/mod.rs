@@ -12,7 +12,7 @@ pub async fn create_quote(
     account_id: AccountId32,
     x25519_public_key: [u8; 32],
 ) -> Result<Vec<u8>, Err> {
-    let context = QuoteContext::OuttieAddBox;
+    let context = QuoteContext::ForestAddTree;
     use rand::{SeedableRng, rngs::StdRng};
     use rand_core::OsRng;
 
@@ -39,7 +39,7 @@ pub async fn create_quote(
     account_id: AccountId32,
     x25519_public_key: [u8; 32],
 ) -> Result<Vec<u8>, Err> {
-    let context = QuoteContext::OuttieAddBox;
+    let context = QuoteContext::ForestAddTree;
 
     let input_data = QuoteInputData::new(account_id, x25519_public_key, nonce, context);
 

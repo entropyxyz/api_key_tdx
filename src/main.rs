@@ -25,7 +25,7 @@ use axum::{
     routing::{get, post},
 };
 use clap::Parser;
-use entropy_client::chain_api::entropy::runtime_types::pallet_outtie::module::JoiningOuttieServerInfo;
+use entropy_client::chain_api::entropy::runtime_types::pallet_forest::module::JoiningForestServerInfo;
 use rand_core::OsRng;
 use sp_core::{Pair, sr25519};
 use std::{net::SocketAddr, str::FromStr};
@@ -42,7 +42,7 @@ async fn main() -> anyhow::Result<()> {
     let x25519_secret = StaticSecret::random_from_rng(OsRng);
     let app_state = AppState::new(configuration, pair.clone(), x25519_secret);
     let (api, rpc) = app_state.get_api_rpc().await.expect("No chain connection");
-    let server_info = JoiningOuttieServerInfo {
+    let server_info = JoiningForestServerInfo {
         endpoint: args.box_url.clone().into(),
         x25519_public_key: app_state.x25519_public_key(),
     };

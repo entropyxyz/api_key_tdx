@@ -24,4 +24,6 @@ pub enum ClientError {
     TryFromSlice(#[from] std::array::TryFromSliceError),
     #[error("There are no API Key Services registered on chain")]
     NoAvailableApiKeyServices,
+    #[error("subxt rpc error: {0}")]
+    SubxtRpcError(#[from] subxt::ext::subxt_rpcs::Error),
 }

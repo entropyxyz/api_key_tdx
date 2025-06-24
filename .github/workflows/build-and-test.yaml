@@ -25,8 +25,8 @@ jobs:
 
       - name: Get entropy binary from release with `master` tag
         run: |
-          docker pull entropyxyz/entropy:master
-          docker create --name extract-entropy-binary entropyxyz/entropy:master
+          docker pull entropyxyz/entropy:test-release-tree-tdx-quote-00
+          docker create --name extract-entropy-binary entropyxyz/entropy:test-release-tree-tdx-quote-00
           docker cp extract-entropy-binary:/usr/local/bin/entropy ./entropy
           docker container remove extract-entropy-binary
 

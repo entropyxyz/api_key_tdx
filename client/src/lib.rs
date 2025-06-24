@@ -5,16 +5,17 @@ pub use entropy_client::chain_api::entropy::runtime_types::pallet_forest::module
 use entropy_api_key_service_shared::{DeleteApiKeyInfo, DeployApiKeyInfo, SendApiKeyMessage};
 use entropy_client::{
     chain_api::{
+        entropy::{self, runtime_types::pallet_parameters::SupportedCvmServices},
         EntropyConfig,
-        entropy::{self, runtime_types::bounded_collections::bounded_vec::BoundedVec},
     },
     client::EncryptedSignedMessage,
+    verify_tree_quote,
 };
 use errors::ClientError;
-use rand::{SeedableRng, rngs::StdRng, seq::SliceRandom};
-use sp_core::{Pair, sr25519};
+use rand::{rngs::StdRng, seq::SliceRandom, SeedableRng};
+use sp_core::{sr25519, Pair};
 use std::time::{SystemTime, UNIX_EPOCH};
-use subxt::{OnlineClient, backend::legacy::LegacyRpcMethods, utils::AccountId32};
+use subxt::{backend::legacy::LegacyRpcMethods, utils::AccountId32, OnlineClient};
 
 /// Client for API key service
 pub struct ApiKeyServiceClient {
@@ -65,21 +66,26 @@ impl ApiKeyServiceClient {
         let api_key_servers = get_api_key_servers(api, rpc).await?;
 
         let mut rng = StdRng::from_seed(pair.public().0);
-        let (_api_key_service_account_id, api_key_service_info) = api_key_servers
-            .choose(&mut rng)
-            .ok_or(ClientError::NoAvailableApiKeyServices)?;
+        let (api_key_service_account_id, api_key_service_info) =
+            api_key_servers
+                .choose(&mut rng)
+                .ok_or(ClientError::NoAvailableApiKeyServices)?;
 
         // TODO derive Clone on ForestServerInfo so that this manual clone is not needed
         let api_key_service_info = ForestServerInfo {
             x25519_public_key: api_key_service_info.x25519_public_key.clone(),
             endpoint: api_key_service_info.endpoint.clone(),
-            provisioning_certification_key: BoundedVec(
-                api_key_service_info
-                    .provisioning_certification_key
-                    .0
-                    .clone(),
-            ),
+            tdx_quote: api_key_service_info.tdx_quote.clone(),
         };
+
+        verify_tree_quote(
+            api,
+            rpc,
+            &api_key_service_info,
+            api_key_service_account_id.0,
+            SupportedCvmServices::ApiKeyService,
+        )
+        .await?;
 
         Ok(Self::new_with_service_info(api_key_service_info, pair)?)
     }

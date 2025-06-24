@@ -2,20 +2,20 @@ use crate::{attestation::create_quote, errors::Err};
 use backoff::ExponentialBackoff;
 use entropy_client::{
     chain_api::{
+        entropy::{self, runtime_types::pallet_forest::module::ForestServerInfo},
         EntropyConfig,
-        entropy::{self, runtime_types::pallet_forest::module::JoiningForestServerInfo},
     },
     request_attestation,
 };
-use sp_core::{Pair, crypto::Ss58Codec, sr25519};
+use sp_core::{crypto::Ss58Codec, sr25519, Pair};
 use std::time::Duration;
 use subxt::{
-    Config, OnlineClient,
     backend::legacy::LegacyRpcMethods,
     blocks::ExtrinsicEvents,
     config::DefaultExtrinsicParamsBuilder as Params,
     tx::{Payload, Signer, TxStatus},
-    utils::{AccountId32 as SubxtAccountId32, H256, MultiSignature},
+    utils::{AccountId32 as SubxtAccountId32, MultiSignature, H256},
+    Config, OnlineClient,
 };
 use subxt_core::{storage::address::Address, utils::Yes};
 
@@ -25,10 +25,11 @@ pub const MORTALITY_BLOCKS: u64 = 32;
 /// Declares an itself to the chain by calling add box to the forest pallet
 /// Will log and backoff if account does not have funds, assumption is that
 /// deployer will see this and fund the account to complete the spin up process
-pub async fn delcare_to_chain(
+pub async fn declare_to_chain(
     api: &OnlineClient<EntropyConfig>,
     rpc: &LegacyRpcMethods<EntropyConfig>,
-    server_info: JoiningForestServerInfo,
+    endpoint: String,
+    x25519_public_key: [u8; 32],
     pair: &sr25519::Pair,
     nonce_option: Option<u32>,
 ) -> Result<(), Err> {
@@ -42,14 +43,16 @@ pub async fn delcare_to_chain(
     };
 
     let nonce = request_attestation(api, rpc, pair).await?;
-    let quote = create_quote(
-        nonce,
-        SubxtAccountId32(pair.public().0),
-        server_info.x25519_public_key,
-    )
-    .await?;
+    let tdx_quote =
+        create_quote(nonce, SubxtAccountId32(pair.public().0), x25519_public_key).await?;
 
-    let add_tree_call = entropy::tx().forest().add_tree(server_info, quote);
+    let server_info = ForestServerInfo {
+        endpoint: endpoint.into(),
+        x25519_public_key,
+        tdx_quote,
+    };
+
+    let add_tree_call = entropy::tx().forest().add_tree(server_info);
     let add_tree = || async {
         println!(
             "attempted to make add_tree tx, If failed probably add funds to {:?}",

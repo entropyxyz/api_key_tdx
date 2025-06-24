@@ -15,19 +15,18 @@ pub mod tests;
 use crate::{
     api_keys::api::{delete_secret, deploy_api_key, make_request},
     health::api::healthz,
-    launch::delcare_to_chain,
+    launch::declare_to_chain,
     node_info::api::{info, version},
 };
 use anyhow::anyhow;
 use app_state::{AppState, Configuration};
 use axum::{
-    Router,
     routing::{get, post},
+    Router,
 };
 use clap::Parser;
-use entropy_client::chain_api::entropy::runtime_types::pallet_forest::module::JoiningForestServerInfo;
 use rand_core::OsRng;
-use sp_core::{Pair, sr25519};
+use sp_core::{sr25519, Pair};
 use std::{net::SocketAddr, str::FromStr};
 use x25519_dalek::StaticSecret;
 
@@ -42,14 +41,17 @@ async fn main() -> anyhow::Result<()> {
     let x25519_secret = StaticSecret::random_from_rng(OsRng);
     let app_state = AppState::new(configuration, pair.clone(), x25519_secret);
     let (api, rpc) = app_state.get_api_rpc().await.expect("No chain connection");
-    let server_info = JoiningForestServerInfo {
-        endpoint: args.box_url.clone().into(),
-        x25519_public_key: app_state.x25519_public_key(),
-    };
 
-    let _ = delcare_to_chain(&api, &rpc, server_info, &pair, None)
-        .await
-        .map_err(|_| anyhow!("Unable declare self to chain"))?;
+    let _ = declare_to_chain(
+        &api,
+        &rpc,
+        args.box_url.clone(),
+        app_state.x25519_public_key(),
+        &pair,
+        None,
+    )
+    .await
+    .map_err(|_| anyhow!("Unable declare self to chain"))?;
     // TODO add loki maybe
     let addr = SocketAddr::from_str(&args.box_url)
         .map_err(|_| anyhow!("Failed to parse threshold url"))?;

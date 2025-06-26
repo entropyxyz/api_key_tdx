@@ -37,8 +37,8 @@ hex = "0.4.3"
 
 # Entropy crates
 entropy-protocol = { branch="master", git="https://github.com/entropyxyz/entropy-core", features=["server"] }
-entropy-client = { branch="peg/store-full-tdx-quote-for-trees", git="https://github.com/entropyxyz/entropy-core" }
-entropy-shared = { branch="peg/store-full-tdx-quote-for-trees", git="https://github.com/entropyxyz/entropy-core" }
+entropy-client = { branch="master", git="https://github.com/entropyxyz/entropy-core" }
+entropy-shared = { branch="master", git="https://github.com/entropyxyz/entropy-core" }
 entropy-api-key-service-shared = { version="0.0.1", path="./shared" }
 
 [dev-dependencies]

@@ -18,8 +18,8 @@ thiserror = "2.0.12"
 rand = "0.8"
 
 # Entropy
-entropy-client={ branch="peg/store-full-tdx-quote-for-trees", git="https://github.com/entropyxyz/entropy-core", features=["full-client"] }
-entropy-protocol={ branch="peg/store-full-tdx-quote-for-trees", git="https://github.com/entropyxyz/entropy-core" }
+entropy-client={ branch="master", git="https://github.com/entropyxyz/entropy-core", features=["full-client"] }
+entropy-protocol={ branch="master", git="https://github.com/entropyxyz/entropy-core" }
 entropy-api-key-service-shared = { version="0.0.1", path="../shared" }
 
 # For test cli - disable default features if you do not what these dependencies

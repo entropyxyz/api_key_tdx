@@ -1,6 +1,6 @@
-use crate::{AppState, attestation::get_pck, errors::Err};
-use axum::{Json, extract::State};
-use entropy_shared::{BoundedVecEncodedVerifyingKey, X25519PublicKey};
+use crate::{attestation::create_quote, errors::Err, AppState};
+use axum::{extract::State, Json};
+use entropy_shared::X25519PublicKey;
 use serde::{Deserialize, Serialize};
 use subxt::utils::AccountId32;
 
@@ -60,8 +60,8 @@ pub struct ServerPublicKeys {
     pub account_id: AccountId32,
     /// The public encryption key
     pub x25519_public_key: X25519PublicKey,
-    /// The Provisioning Certification Key used in TDX quotes
-    pub provisioning_certification_key: BoundedVecEncodedVerifyingKey,
+    /// A hex-encoded TDX quote to show that the server is running the desired service
+    pub tdx_quote: String,
 }
 
 /// Returns the server's public keys
@@ -70,6 +70,13 @@ pub async fn info(State(app_state): State<AppState>) -> Result<Json<ServerPublic
     Ok(Json(ServerPublicKeys {
         x25519_public_key: app_state.x25519_public_key(),
         account_id: app_state.subxt_account_id(),
-        provisioning_certification_key: get_pck(app_state.subxt_account_id())?,
+        tdx_quote: hex::encode(
+            create_quote(
+                [0; 32],
+                app_state.subxt_account_id(),
+                app_state.x25519_public_key(),
+            )
+            .await?,
+        ),
     }))
 }

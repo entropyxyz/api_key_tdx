@@ -1,5 +1,5 @@
 use crate::{
-    attestation::get_pck,
+    attestation::create_quote,
     node_info::api::{BuildDetails, ServerPublicKeys, VersionDetails},
     test_helpers::setup_client,
 };
@@ -43,7 +43,15 @@ async fn info_test() {
         ServerPublicKeys {
             account_id: app_state.subxt_account_id(),
             x25519_public_key: app_state.x25519_public_key(),
-            provisioning_certification_key: get_pck(app_state.subxt_account_id()).unwrap(),
+            tdx_quote: hex::encode(
+                create_quote(
+                    [0; 32],
+                    app_state.subxt_account_id(),
+                    app_state.x25519_public_key(),
+                )
+                .await
+                .unwrap()
+            )
         }
     );
 }

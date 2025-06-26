@@ -26,4 +26,6 @@ pub enum ClientError {
     NoAvailableApiKeyServices,
     #[error("subxt rpc error: {0}")]
     SubxtRpcError(#[from] subxt::ext::subxt_rpcs::Error),
+    #[error("Client: {0}")]
+    EntropyClient(#[from] entropy_client::ClientError),
 }

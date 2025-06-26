@@ -39,13 +39,13 @@ hex = "0.4.3"
 entropy-protocol = { branch="master", git="https://github.com/entropyxyz/entropy-core", features=["server"] }
 entropy-client = { branch="master", git="https://github.com/entropyxyz/entropy-core" }
 entropy-shared = { branch="master", git="https://github.com/entropyxyz/entropy-core" }
-entropy-testing-utils = { branch="master", git="https://github.com/entropyxyz/entropy-core" }
 entropy-api-key-service-shared = { version="0.0.1", path="./shared" }
 
 [dev-dependencies]
 serial_test ="3.2.0"
 sp-keyring        ="41.0.0"
 entropy-api-key-service-client = { version="0.0.1", path="./client" }
+entropy-testing-utils = { branch="master", git="https://github.com/entropyxyz/entropy-core" }
 
 [build-dependencies]
 vergen={ version="8.3.2", features=["build", "git", "gitcl"] }

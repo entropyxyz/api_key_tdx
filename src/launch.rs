@@ -22,57 +22,6 @@ use subxt_core::{storage::address::Address, utils::Yes};
 /// Blocks a transaction is valid for
 pub const MORTALITY_BLOCKS: u64 = 32;
 
-/// Declares an itself to the chain by calling add box to the forest pallet
-/// Will log and backoff if account does not have funds, assumption is that
-/// deployer will see this and fund the account to complete the spin up process
-pub async fn declare_to_chain(
-    api: &OnlineClient<EntropyConfig>,
-    rpc: &LegacyRpcMethods<EntropyConfig>,
-    endpoint: String,
-    x25519_public_key: [u8; 32],
-    pair: &sr25519::Pair,
-    nonce_option: Option<u32>,
-) -> Result<(), Err> {
-    // Use the default maximum elapsed time of 15 minutes.
-    // This means if we do not get a connection within 15 minutes the process will terminate and the
-    // keypair will be lost.
-    let backoff = if cfg!(test) {
-        create_test_backoff()
-    } else {
-        ExponentialBackoff::default()
-    };
-
-    let nonce = request_attestation(api, rpc, pair).await?;
-    let tdx_quote =
-        create_quote(nonce, SubxtAccountId32(pair.public().0), x25519_public_key).await?;
-
-    let server_info = ForestServerInfo {
-        endpoint: endpoint.into(),
-        x25519_public_key,
-        tdx_quote,
-    };
-
-    let add_tree_call = entropy::tx().forest().add_tree(server_info);
-    let add_tree = || async {
-        println!(
-            "attempted to make add_tree tx, If failed probably add funds to {:?}",
-            pair.public().to_ss58check()
-        );
-        let in_block =
-            submit_transaction_with_pair(api, rpc, &pair, &add_tree_call, nonce_option).await?;
-        let _result_event = in_block
-            .find_first::<entropy::forest::events::TreeAdded>()
-            .map_err(|_| Err::NoEvent)?
-            .ok_or(Err::NoEvent)?;
-        Ok(())
-    };
-    // TODO: maybe add loggings here if fialed
-    backoff::future::retry(backoff.clone(), add_tree)
-        .await
-        .map_err(|_| Err::TimedOut)?;
-    Ok(())
-}
-
 /// Send a transaction to the Entropy chain
 ///
 /// Optionally takes a nonce, otherwise it grabs the latest nonce from the chain

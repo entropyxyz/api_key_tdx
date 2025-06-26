@@ -15,7 +15,6 @@ pub mod tests;
 use crate::{
     api_keys::api::{delete_secret, deploy_api_key, make_request},
     health::api::healthz,
-    launch::declare_to_chain,
     node_info::api::{info, version},
 };
 use anyhow::anyhow;
@@ -29,6 +28,7 @@ use rand_core::OsRng;
 use sp_core::{sr25519, Pair};
 use std::{net::SocketAddr, str::FromStr};
 use x25519_dalek::StaticSecret;
+use entropy_client::forest::declare_to_chain;
 
 pub use entropy_api_key_service_shared::{DeleteApiKeyInfo, DeployApiKeyInfo, SendApiKeyMessage};
 

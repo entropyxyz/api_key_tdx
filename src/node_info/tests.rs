@@ -1,9 +1,10 @@
 use crate::{
-    attestation::create_quote,
     node_info::api::{BuildDetails, ServerPublicKeys, VersionDetails},
     test_helpers::setup_client,
 };
+use entropy_client::attestation::create_quote;
 use serial_test::serial;
+use entropy_shared::attestation::QuoteContext;
 
 #[tokio::test]
 #[serial]
@@ -47,7 +48,8 @@ async fn info_test() {
                 create_quote(
                     [0; 32],
                     app_state.subxt_account_id(),
-                    app_state.x25519_public_key(),
+                    &app_state.x25519_public_key(),
+                    QuoteContext::ForestAddTree,
                 )
                 .await
                 .unwrap()

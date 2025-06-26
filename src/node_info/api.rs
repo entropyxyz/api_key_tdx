@@ -1,6 +1,7 @@
-use crate::{AppState, attestation::create_quote, errors::Err};
+use crate::{AppState, errors::Err};
 use axum::{Json, extract::State};
-use entropy_shared::X25519PublicKey;
+use entropy_shared::{X25519PublicKey, attestation::QuoteContext};
+use entropy_client::attestation::create_quote;
 use serde::{Deserialize, Serialize};
 use subxt::utils::AccountId32;
 
@@ -74,7 +75,8 @@ pub async fn info(State(app_state): State<AppState>) -> Result<Json<ServerPublic
             create_quote(
                 [0; 32],
                 app_state.subxt_account_id(),
-                app_state.x25519_public_key(),
+                &app_state.x25519_public_key(),
+                QuoteContext::ForestAddTree,
             )
             .await?,
         ),

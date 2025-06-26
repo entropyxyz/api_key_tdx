@@ -1,6 +1,5 @@
 pub mod api_keys;
 pub mod app_state;
-pub mod attestation;
 pub mod errors;
 pub mod health;
 pub mod node_info;

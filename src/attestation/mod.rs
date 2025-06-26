@@ -10,7 +10,7 @@ pub async fn create_quote(
     x25519_public_key: [u8; 32],
 ) -> Result<Vec<u8>, Err> {
     let context = QuoteContext::ForestAddTree;
-    use rand::{rngs::StdRng, SeedableRng};
+    use rand::{SeedableRng, rngs::StdRng};
 
     let mut seeder = StdRng::from_seed(account_id.0);
 

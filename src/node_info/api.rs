@@ -1,5 +1,5 @@
-use crate::{attestation::create_quote, errors::Err, AppState};
-use axum::{extract::State, Json};
+use crate::{AppState, attestation::create_quote, errors::Err};
+use axum::{Json, extract::State};
 use entropy_shared::X25519PublicKey;
 use serde::{Deserialize, Serialize};
 use subxt::utils::AccountId32;

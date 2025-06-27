@@ -64,7 +64,6 @@ pub async fn make_request(
     let user_make_request_info: SendApiKeyMessage =
         serde_json::from_slice(&signed_message.message.0)?;
 
-    println!("REQUEST: {:?}", user_make_request_info);
     let request_author = SubxtAccountId32(*signed_message.account_id().as_ref());
     let current_timestamp = get_current_timestamp()?;
 
@@ -83,12 +82,13 @@ pub async fn make_request(
 
     let mut headers = HeaderMap::new();
     for (key, value) in &user_make_request_info.http_headers {
-        println!("HEADER: {} {}", key, value);
         let first = key.replace("xxxREPLACE_MExxx", &api_key_info);
         let second = value.replace("xxxREPLACE_MExxx", &api_key_info);
 
         let header_name = HeaderName::from_bytes(first.as_bytes())?;
         let header_value = HeaderValue::from_str(&second)?;
+
+        println!("HEADERVAL: {:?}", header_value);
         headers.insert(header_name, header_value);
     }
 

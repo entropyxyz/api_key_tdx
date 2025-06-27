@@ -1,10 +1,10 @@
 use crate::{
-    node_info::api::{BuildDetails, ServerPublicKeys, VersionDetails},
+    node_info::api::{BuildDetails, VersionDetails},
     test_helpers::setup_client,
 };
-use entropy_client::attestation::create_quote;
-use serial_test::serial;
+use entropy_client::{attestation::create_quote, util::ServerPublicKeys};
 use entropy_shared::attestation::QuoteContext;
+use serial_test::serial;
 
 #[tokio::test]
 #[serial]
@@ -39,21 +39,7 @@ async fn info_test() {
         .await
         .unwrap();
     let public_keys: ServerPublicKeys = response.json().await.unwrap();
-    assert_eq!(
-        public_keys,
-        ServerPublicKeys {
-            account_id: app_state.subxt_account_id(),
-            x25519_public_key: app_state.x25519_public_key(),
-            tdx_quote: hex::encode(
-                create_quote(
-                    [0; 32],
-                    app_state.subxt_account_id(),
-                    &app_state.x25519_public_key(),
-                    QuoteContext::ForestAddTree,
-                )
-                .await
-                .unwrap()
-            )
-        }
-    );
+    assert_eq!(public_keys.account_id, app_state.subxt_account_id());
+    assert_eq!(public_keys.x25519_public_key, app_state.x25519_public_key());
+    assert_eq!(public_keys.ready, None);
 }

@@ -1,7 +1,10 @@
 use crate::{AppState, errors::Err};
 use axum::{Json, extract::State};
+use entropy_client::{
+    attestation::create_quote,
+    util::{ServerPublicKeys, get_node_info},
+};
 use entropy_shared::{X25519PublicKey, attestation::QuoteContext};
-use entropy_client::attestation::create_quote;
 use serde::{Deserialize, Serialize};
 use subxt::utils::AccountId32;
 
@@ -54,31 +57,14 @@ pub async fn version() -> Json<VersionDetails> {
     Json(VersionDetails::new())
 }
 
-/// Public signing and encryption keys associated with a server
-#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
-pub struct ServerPublicKeys {
-    /// The account ID
-    pub account_id: AccountId32,
-    /// The public encryption key
-    pub x25519_public_key: X25519PublicKey,
-    /// A hex-encoded TDX quote to show that the server is running the desired service
-    pub tdx_quote: String,
-}
-
 /// Returns the server's public keys
 #[tracing::instrument(skip_all)]
 pub async fn info(State(app_state): State<AppState>) -> Result<Json<ServerPublicKeys>, Err> {
-    Ok(Json(ServerPublicKeys {
-        x25519_public_key: app_state.x25519_public_key(),
-        account_id: app_state.subxt_account_id(),
-        tdx_quote: hex::encode(
-            create_quote(
-                [0; 32],
-                app_state.subxt_account_id(),
-                &app_state.x25519_public_key(),
-                QuoteContext::ForestAddTree,
-            )
-            .await?,
-        ),
-    }))
+    Ok(get_node_info(
+        None,
+        app_state.x25519_public_key(),
+        app_state.subxt_account_id(),
+        QuoteContext::Validate,
+    )
+    .await?)
 }

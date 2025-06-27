@@ -5,17 +5,17 @@ pub use entropy_client::chain_api::entropy::runtime_types::pallet_forest::module
 use entropy_api_key_service_shared::{DeleteApiKeyInfo, DeployApiKeyInfo, SendApiKeyMessage};
 use entropy_client::{
     chain_api::{
-        entropy::{self, runtime_types::pallet_parameters::SupportedCvmServices},
         EntropyConfig,
+        entropy::{self, runtime_types::pallet_parameters::SupportedCvmServices},
     },
     client::EncryptedSignedMessage,
     verify_tree_quote,
 };
 use errors::ClientError;
-use rand::{rngs::StdRng, seq::SliceRandom, SeedableRng};
-use sp_core::{sr25519, Pair};
+use rand::{SeedableRng, rngs::StdRng, seq::SliceRandom};
+use sp_core::{Pair, sr25519};
 use std::time::{SystemTime, UNIX_EPOCH};
-use subxt::{backend::legacy::LegacyRpcMethods, utils::AccountId32, OnlineClient};
+use subxt::{OnlineClient, backend::legacy::LegacyRpcMethods, utils::AccountId32};
 
 /// Client for API key service
 pub struct ApiKeyServiceClient {

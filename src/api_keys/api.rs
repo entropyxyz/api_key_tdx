@@ -64,6 +64,7 @@ pub async fn make_request(
     let user_make_request_info: SendApiKeyMessage =
         serde_json::from_slice(&signed_message.message.0)?;
 
+    println!("REQUEST: {:?}", user_make_request_info);
     let request_author = SubxtAccountId32(*signed_message.account_id().as_ref());
     let current_timestamp = get_current_timestamp()?;
 

@@ -2,8 +2,7 @@ use crate::{
     node_info::api::{BuildDetails, VersionDetails},
     test_helpers::setup_client,
 };
-use entropy_client::{attestation::create_quote, util::ServerPublicKeys};
-use entropy_shared::attestation::QuoteContext;
+use entropy_client::util::ServerPublicKeys;
 use serial_test::serial;
 
 #[tokio::test]

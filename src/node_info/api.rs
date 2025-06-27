@@ -1,12 +1,8 @@
 use crate::{AppState, errors::Err};
 use axum::{Json, extract::State};
-use entropy_client::{
-    attestation::create_quote,
-    util::{ServerPublicKeys, get_node_info},
-};
-use entropy_shared::{X25519PublicKey, attestation::QuoteContext};
+use entropy_client::util::{ServerPublicKeys, get_node_info};
+use entropy_shared::attestation::QuoteContext;
 use serde::{Deserialize, Serialize};
-use subxt::utils::AccountId32;
 
 /// Version information - the output of the `/version` HTTP endpoint
 #[derive(Serialize, Deserialize, PartialEq, Debug)]

@@ -82,6 +82,7 @@ pub async fn make_request(
 
     let mut headers = HeaderMap::new();
     for (key, value) in &user_make_request_info.http_headers {
+        println!("HEADER: {} {}", key, value);
         let first = key.replace("xxxREPLACE_MExxx", &api_key_info);
         let second = value.replace("xxxREPLACE_MExxx", &api_key_info);
 

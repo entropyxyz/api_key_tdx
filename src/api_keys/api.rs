@@ -88,7 +88,6 @@ pub async fn make_request(
         let header_name = HeaderName::from_bytes(first.as_bytes())?;
         let header_value = HeaderValue::from_str(&second)?;
 
-        println!("HEADERVAL: {:?}", header_value);
         headers.insert(header_name, header_value);
     }
 

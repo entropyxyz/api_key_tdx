@@ -1,25 +1,11 @@
-pub mod api_keys;
-pub mod app_state;
-pub mod attestation;
-pub mod errors;
-pub mod health;
-pub mod launch;
-pub mod node_info;
-
-#[cfg(test)]
-pub mod test_helpers;
-
-#[cfg(test)]
-pub mod tests;
-
-use crate::{
+use anyhow::anyhow;
+use api_key_tdx::{
     api_keys::api::{delete_secret, deploy_api_key, make_request},
+    app_state::{AppState, Configuration},
     health::api::healthz,
     launch::declare_to_chain,
     node_info::api::{info, version},
 };
-use anyhow::anyhow;
-use app_state::{AppState, Configuration};
 use axum::{
     routing::{get, post},
     Router,
@@ -29,8 +15,6 @@ use rand_core::OsRng;
 use sp_core::{sr25519, Pair};
 use std::{net::SocketAddr, str::FromStr};
 use x25519_dalek::StaticSecret;
-
-pub use entropy_api_key_service_shared::{DeleteApiKeyInfo, DeployApiKeyInfo, SendApiKeyMessage};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

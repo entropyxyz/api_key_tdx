@@ -1,4 +1,3 @@
-#![cfg(test)]
 mod test_server;
 
 use crate::{
@@ -7,7 +6,7 @@ use crate::{
 };
 use entropy_api_key_service_client::ApiKeyServiceClient;
 use rand_core::OsRng;
-use sp_core::{Pair, sr25519};
+use sp_core::{sr25519, Pair};
 use sp_keyring::sr25519::Keyring;
 use test_server::start_test_api_server;
 use x25519_dalek::StaticSecret;

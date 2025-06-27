@@ -1,14 +1,8 @@
 use anyhow::anyhow;
 use api_key_tdx::{
-    api_keys::api::{delete_secret, deploy_api_key, make_request},
+    app,
     app_state::{AppState, Configuration},
-    health::api::healthz,
     launch::declare_to_chain,
-    node_info::api::{info, version},
-};
-use axum::{
-    routing::{get, post},
-    Router,
 };
 use clap::Parser;
 use rand_core::OsRng;
@@ -66,17 +60,4 @@ pub struct StartupArgs {
         default_value = "ws://localhost:9944"
     )]
     pub chain_endpoint: String,
-}
-
-pub fn app(app_state: AppState) -> Router {
-    let routes = Router::new()
-        .route("/healthz", get(healthz))
-        .route("/deploy-api-key", post(deploy_api_key))
-        .route("/delete-secret", post(delete_secret))
-        .route("/make-request", post(make_request))
-        .route("/version", get(version))
-        .route("/info", get(info))
-        .with_state(app_state);
-
-    routes
 }

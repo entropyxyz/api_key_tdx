@@ -1,7 +1,8 @@
 use crate::{
-    DeleteApiKeyInfo, DeployApiKeyInfo, SendApiKeyMessage, app_state::AppState, errors::Err,
+    app_state::AppState, errors::Err, DeleteApiKeyInfo, DeployApiKeyInfo, SendApiKeyMessage,
 };
-use axum::{Json, extract::State, http::StatusCode};
+use axum::{extract::State, http::StatusCode, Json};
+use entropy_api_key_service_shared::API_KEY_PLACEHOLDER;
 use entropy_protocol::sign_and_encrypt::EncryptedSignedMessage;
 use reqwest::header::{HeaderMap, HeaderName, HeaderValue};
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -78,12 +79,12 @@ pub async fn make_request(
     let client = reqwest::Client::new();
     let url = user_make_request_info
         .api_url
-        .replace("xxxREPLACE_MExxx", &api_key_info);
+        .replace(API_KEY_PLACEHOLDER, &api_key_info);
 
     let mut headers = HeaderMap::new();
     for (key, value) in &user_make_request_info.http_headers {
-        let first = key.replace("xxxREPLACE_MExxx", &api_key_info);
-        let second = value.replace("xxxREPLACE_MExxx", &api_key_info);
+        let first = key.replace(API_KEY_PLACEHOLDER, &api_key_info);
+        let second = value.replace(API_KEY_PLACEHOLDER, &api_key_info);
 
         let header_name = HeaderName::from_bytes(first.as_bytes())?;
         let header_value = HeaderValue::from_str(&second)?;

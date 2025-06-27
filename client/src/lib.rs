@@ -17,6 +17,8 @@ use sp_core::{sr25519, Pair};
 use std::time::{SystemTime, UNIX_EPOCH};
 use subxt::{backend::legacy::LegacyRpcMethods, utils::AccountId32, OnlineClient};
 
+pub use entropy_api_key_service_shared::API_KEY_PLACEHOLDER;
+
 /// Client for API key service
 pub struct ApiKeyServiceClient {
     /// Socket address or hostname of the api key service instance to use

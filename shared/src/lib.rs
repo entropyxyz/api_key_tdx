@@ -1,6 +1,9 @@
 //! Shared types used by the API Key Service server and client
 use serde::{Deserialize, Serialize};
 
+/// The placeholder which will be replaced with your API key if given in request headers or body
+pub const API_KEY_PLACEHOLDER: &str = "xxxREPLACE_MExxx";
+
 /// Request payload for the `/deploy-api-key` HTTP route
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct DeployApiKeyInfo {

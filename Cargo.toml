@@ -37,7 +37,7 @@ hex = "0.4.3"
 
 # Entropy crates
 entropy-protocol = { branch="create-forest-helper-functions", git="https://github.com/entropyxyz/entropy-core", features=["server"] }
-entropy-client = { branch="create-forest-helper-functions", git="https://github.com/entropyxyz/entropy-core" }
+entropy-client = { branch="create-forest-helper-functions", git="https://github.com/entropyxyz/entropy-core", features=["server"] }
 entropy-shared = { branch="create-forest-helper-functions", git="https://github.com/entropyxyz/entropy-core" }
 entropy-api-key-service-shared = { version="0.0.1", path="./shared" }
 

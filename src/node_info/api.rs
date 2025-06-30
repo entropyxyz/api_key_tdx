@@ -1,6 +1,6 @@
 use crate::{AppState, errors::Err};
 use axum::{Json, extract::State};
-use entropy_client::util::{ServerPublicKeys, get_node_info};
+use entropy_client::forest::{ServerPublicKeys, get_node_info};
 use entropy_shared::attestation::QuoteContext;
 use serde::{Deserialize, Serialize};
 

@@ -1953,7 +1953,7 @@ dependencies = [
 [[package]]
 name = "entropy-client"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=create-forest-helper-functions#18f3834c42d2f875189244a7ac1529346c8805f5"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=create-forest-helper-functions#b668a12781262ed6349d5061901c7493b37b0437"
 dependencies = [
  "anyhow",
  "axum",
@@ -1987,7 +1987,7 @@ dependencies = [
 [[package]]
 name = "entropy-kvdb"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=create-forest-helper-functions#18f3834c42d2f875189244a7ac1529346c8805f5"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=create-forest-helper-functions#b668a12781262ed6349d5061901c7493b37b0437"
 dependencies = [
  "bincode",
  "chacha20poly1305 0.9.1",
@@ -2032,7 +2032,7 @@ dependencies = [
 [[package]]
 name = "entropy-protocol"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=create-forest-helper-functions#18f3834c42d2f875189244a7ac1529346c8805f5"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=create-forest-helper-functions#b668a12781262ed6349d5061901c7493b37b0437"
 dependencies = [
  "async-trait",
  "axum",
@@ -2068,7 +2068,7 @@ dependencies = [
 [[package]]
 name = "entropy-shared"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=create-forest-helper-functions#18f3834c42d2f875189244a7ac1529346c8805f5"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=create-forest-helper-functions#b668a12781262ed6349d5061901c7493b37b0437"
 dependencies = [
  "blake2",
  "hex-literal",
@@ -2089,7 +2089,7 @@ dependencies = [
 [[package]]
 name = "entropy-testing-utils"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=create-forest-helper-functions#18f3834c42d2f875189244a7ac1529346c8805f5"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=create-forest-helper-functions#b668a12781262ed6349d5061901c7493b37b0437"
 dependencies = [
  "axum",
  "entropy-kvdb",
@@ -2118,7 +2118,7 @@ dependencies = [
 [[package]]
 name = "entropy-tss"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=create-forest-helper-functions#18f3834c42d2f875189244a7ac1529346c8805f5"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=create-forest-helper-functions#b668a12781262ed6349d5061901c7493b37b0437"
 dependencies = [
  "anyhow",
  "axum",

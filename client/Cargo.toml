@@ -18,7 +18,7 @@ thiserror = "2.0.12"
 rand = "0.8"
 
 # Entropy
-entropy-client={ branch="create-forest-helper-functions", git="https://github.com/entropyxyz/entropy-core", features=["full-client"] }
+entropy-client={ branch="create-forest-helper-functions", git="https://github.com/entropyxyz/entropy-core", features=["full-client", "server"] }
 entropy-protocol={ branch="create-forest-helper-functions", git="https://github.com/entropyxyz/entropy-core" }
 entropy-api-key-service-shared = { version="0.0.1", path="../shared" }
 

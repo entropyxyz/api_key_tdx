@@ -1953,7 +1953,7 @@ dependencies = [
 [[package]]
 name = "entropy-client"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=create-forest-helper-functions#b668a12781262ed6349d5061901c7493b37b0437"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=master#2aa46756ca70a867a2bb95cf6f35f13f7db82c3d"
 dependencies = [
  "anyhow",
  "axum",
@@ -1987,7 +1987,7 @@ dependencies = [
 [[package]]
 name = "entropy-kvdb"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=create-forest-helper-functions#b668a12781262ed6349d5061901c7493b37b0437"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=master#2aa46756ca70a867a2bb95cf6f35f13f7db82c3d"
 dependencies = [
  "bincode",
  "chacha20poly1305 0.9.1",
@@ -2032,7 +2032,7 @@ dependencies = [
 [[package]]
 name = "entropy-protocol"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=create-forest-helper-functions#b668a12781262ed6349d5061901c7493b37b0437"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=master#2aa46756ca70a867a2bb95cf6f35f13f7db82c3d"
 dependencies = [
  "async-trait",
  "axum",
@@ -2068,7 +2068,7 @@ dependencies = [
 [[package]]
 name = "entropy-shared"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=create-forest-helper-functions#b668a12781262ed6349d5061901c7493b37b0437"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=master#2aa46756ca70a867a2bb95cf6f35f13f7db82c3d"
 dependencies = [
  "blake2",
  "hex-literal",
@@ -2089,7 +2089,7 @@ dependencies = [
 [[package]]
 name = "entropy-testing-utils"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=create-forest-helper-functions#b668a12781262ed6349d5061901c7493b37b0437"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=master#2aa46756ca70a867a2bb95cf6f35f13f7db82c3d"
 dependencies = [
  "axum",
  "entropy-kvdb",
@@ -2118,7 +2118,7 @@ dependencies = [
 [[package]]
 name = "entropy-tss"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=create-forest-helper-functions#b668a12781262ed6349d5061901c7493b37b0437"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=master#2aa46756ca70a867a2bb95cf6f35f13f7db82c3d"
 dependencies = [
  "anyhow",
  "axum",
@@ -4791,9 +4791,9 @@ checksum = "2b15c43186be67a4fd63bee50d0303afffcef381492ebe2c5d87f324e1b8815c"
 
 [[package]]
 name = "reqwest"
-version = "0.12.20"
+version = "0.12.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eabf4c97d9130e2bf606614eb937e86edac8292eaa6f422f995d7e8de1eb1813"
+checksum = "cbc931937e6ca3a06e3b6c0aa7841849b160a90351d6ab467a8b9b9959767531"
 dependencies = [
  "base64 0.22.1",
  "bytes",
@@ -7024,7 +7024,7 @@ dependencies = [
  "tokio-stream",
  "tracing",
  "tracing-core",
- "tracing-log 0.1.4",
+ "tracing-log 0.2.0",
  "tracing-serde",
  "tracing-subscriber",
  "url",
@@ -8016,7 +8016,7 @@ version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf221c93e13a30d793f7645a0e7762c55d169dbb0a49671918a2319d289b10bb"
 dependencies = [
- "windows-sys 0.48.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]

@@ -27,7 +27,7 @@ zeroize            ="1.8.1"
 thiserror     ="2.0.12"
 tracing                 ="0.1.41"
 rand_core         ={ version="0.6.4" }
-reqwest           ={ version="0.12.20", features=["json"] }
+reqwest           ={ version="0.12.22", features=["json"] }
 url = "2.5"
 backoff            ={ version="0.4.0", features=["tokio"] }
 rand          ={ version="0.8", default-features=false }
@@ -36,16 +36,16 @@ configfs-tsm     ={ version="0.0.1", optional=true }
 hex = "0.4.3"
 
 # Entropy crates
-entropy-protocol = { branch="create-forest-helper-functions", git="https://github.com/entropyxyz/entropy-core", features=["server"] }
-entropy-client = { branch="create-forest-helper-functions", git="https://github.com/entropyxyz/entropy-core", features=["server"] }
-entropy-shared = { branch="create-forest-helper-functions", git="https://github.com/entropyxyz/entropy-core" }
+entropy-protocol = { branch="master", git="https://github.com/entropyxyz/entropy-core", features=["server"] }
+entropy-client = { branch="master", git="https://github.com/entropyxyz/entropy-core", features=["server"] }
+entropy-shared = { branch="master", git="https://github.com/entropyxyz/entropy-core" }
 entropy-api-key-service-shared = { version="0.0.1", path="./shared" }
 
 [dev-dependencies]
 serial_test ="3.2.0"
 sp-keyring        ="41.0.0"
 entropy-api-key-service-client = { version="0.0.1", path="./client" }
-entropy-testing-utils = { branch="create-forest-helper-functions", git="https://github.com/entropyxyz/entropy-core" }
+entropy-testing-utils = { branch="master", git="https://github.com/entropyxyz/entropy-core" }
 
 [build-dependencies]
 vergen={ version="8.3.2", features=["build", "git", "gitcl"] }

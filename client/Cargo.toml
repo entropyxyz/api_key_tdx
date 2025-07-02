@@ -11,15 +11,15 @@ repository = 'https://github.com/entropyxyz/api_key_tdx'
 [dependencies]
 serde = { version="1.0", features=["derive"] }
 serde_json = "1.0"
-reqwest = { version="0.12.20", features=["json"] }
+reqwest = { version="0.12.22", features=["json"] }
 sp-core = { version="36.1.0", default-features=false }
 subxt = { version = "0.42.0" }
 thiserror = "2.0.12"
 rand = "0.8"
 
 # Entropy
-entropy-client={ branch="create-forest-helper-functions", git="https://github.com/entropyxyz/entropy-core", features=["full-client", "server"] }
-entropy-protocol={ branch="create-forest-helper-functions", git="https://github.com/entropyxyz/entropy-core" }
+entropy-client={ branch="master", git="https://github.com/entropyxyz/entropy-core", features=["full-client", "server"] }
+entropy-protocol={ branch="master", git="https://github.com/entropyxyz/entropy-core" }
 entropy-api-key-service-shared = { version="0.0.1", path="../shared" }
 
 # For test cli - disable default features if you do not what these dependencies

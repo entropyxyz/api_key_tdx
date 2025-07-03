@@ -36,9 +36,9 @@ configfs-tsm     ={ version="0.0.1", optional=true }
 hex = "0.4.3"
 
 # Entropy crates
-entropy-protocol = { branch="master", git="https://github.com/entropyxyz/entropy-core", features=["server"] }
-entropy-client = { branch="master", git="https://github.com/entropyxyz/entropy-core", features=["server"] }
-entropy-shared = { branch="master", git="https://github.com/entropyxyz/entropy-core" }
+entropy-protocol = { branch="fix-production-build", git="https://github.com/entropyxyz/entropy-core", features=["server"] }
+entropy-client = { branch="fix-production-build", git="https://github.com/entropyxyz/entropy-core", features=["server"] }
+entropy-shared = { branch="fix-production-build", git="https://github.com/entropyxyz/entropy-core" }
 entropy-api-key-service-shared = { version="0.0.1", path="./shared" }
 
 [dev-dependencies]
@@ -54,4 +54,4 @@ vergen={ version="8.3.2", features=["build", "git", "gitcl"] }
 default = ["std"]
 std         =["sp-core/std"]
 # Enables non-mock TDX quotes
-production = ["dep:configfs-tsm"]
+production = ["dep:configfs-tsm", "entropy-client/production"]

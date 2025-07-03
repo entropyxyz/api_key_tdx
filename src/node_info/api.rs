@@ -39,7 +39,7 @@ impl BuildDetails {
     #[cfg(feature = "production")]
     fn new() -> Self {
         BuildDetails::ProductionWithMeasurementValue(
-            match crate::attestation::get_measurement_value() {
+            match entropy_client::attestation::get_measurement_value() {
                 Ok(value) => hex::encode(value),
                 Err(error) => format!("Failed to get measurement value {:?}", error),
             },

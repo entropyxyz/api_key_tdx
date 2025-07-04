@@ -1956,7 +1956,7 @@ dependencies = [
 [[package]]
 name = "entropy-client"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=generalize-tree-state#21b84040b344fe1a3e51490a6af9aa8accaf4a98"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=generalize-tree-state#84c8260c8c98a1a69fb8d0d3c7bbc82943f115ef"
 dependencies = [
  "anyhow",
  "axum",
@@ -1991,7 +1991,7 @@ dependencies = [
 [[package]]
 name = "entropy-kvdb"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=generalize-tree-state#21b84040b344fe1a3e51490a6af9aa8accaf4a98"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=generalize-tree-state#84c8260c8c98a1a69fb8d0d3c7bbc82943f115ef"
 dependencies = [
  "bincode",
  "chacha20poly1305 0.9.1",
@@ -2036,7 +2036,7 @@ dependencies = [
 [[package]]
 name = "entropy-protocol"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=generalize-tree-state#21b84040b344fe1a3e51490a6af9aa8accaf4a98"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=generalize-tree-state#84c8260c8c98a1a69fb8d0d3c7bbc82943f115ef"
 dependencies = [
  "async-trait",
  "axum",
@@ -2072,7 +2072,7 @@ dependencies = [
 [[package]]
 name = "entropy-shared"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=generalize-tree-state#21b84040b344fe1a3e51490a6af9aa8accaf4a98"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=generalize-tree-state#84c8260c8c98a1a69fb8d0d3c7bbc82943f115ef"
 dependencies = [
  "blake2",
  "hex-literal",
@@ -2093,7 +2093,7 @@ dependencies = [
 [[package]]
 name = "entropy-testing-utils"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=generalize-tree-state#21b84040b344fe1a3e51490a6af9aa8accaf4a98"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=generalize-tree-state#84c8260c8c98a1a69fb8d0d3c7bbc82943f115ef"
 dependencies = [
  "axum",
  "entropy-kvdb",
@@ -2122,7 +2122,7 @@ dependencies = [
 [[package]]
 name = "entropy-tss"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=generalize-tree-state#21b84040b344fe1a3e51490a6af9aa8accaf4a98"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=generalize-tree-state#84c8260c8c98a1a69fb8d0d3c7bbc82943f115ef"
 dependencies = [
  "anyhow",
  "axum",

@@ -38,7 +38,13 @@ async fn info_test() {
         .await
         .unwrap();
     let public_keys: ServerPublicKeys = response.json().await.unwrap();
-    assert_eq!(public_keys.account_id, app_state.tree_state.subxt_account_id());
-    assert_eq!(public_keys.x25519_public_key, app_state.tree_state.x25519_public_key());
+    assert_eq!(
+        public_keys.account_id,
+        app_state.tree_state.subxt_account_id()
+    );
+    assert_eq!(
+        public_keys.x25519_public_key,
+        app_state.tree_state.x25519_public_key()
+    );
     assert_eq!(public_keys.ready, None);
 }

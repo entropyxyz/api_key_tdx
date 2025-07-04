@@ -1,17 +1,14 @@
 #![cfg(test)]
 mod test_server;
 
-use crate::{
-    app,
-    app_state::{AppState},
-};
+use crate::{app, app_state::AppState};
 use entropy_api_key_service_client::ApiKeyServiceClient;
+use entropy_client::forest::{Configuration, TreeState};
 use rand_core::OsRng;
 use sp_core::{Pair, sr25519};
 use sp_keyring::sr25519::Keyring;
 use test_server::start_test_api_server;
 use x25519_dalek::StaticSecret;
-use entropy_client::forest::{TreeState, Configuration};
 
 pub const DEFAULT_ENDPOINT: &str = "ws://localhost:9944";
 

@@ -188,9 +188,9 @@ dependencies = [
  "configfs-tsm",
  "entropy-api-key-service-client",
  "entropy-api-key-service-shared",
- "entropy-client 0.4.0-rc.1 (git+https://github.com/entropyxyz/entropy-core?branch=generalize-tree-state)",
- "entropy-protocol 0.4.0-rc.1 (git+https://github.com/entropyxyz/entropy-core?branch=generalize-tree-state)",
- "entropy-shared 0.4.0-rc.1 (git+https://github.com/entropyxyz/entropy-core?branch=generalize-tree-state)",
+ "entropy-client",
+ "entropy-protocol",
+ "entropy-shared",
  "entropy-testing-utils",
  "hex",
  "rand 0.8.5",
@@ -1933,8 +1933,8 @@ dependencies = [
  "anyhow",
  "clap",
  "entropy-api-key-service-shared",
- "entropy-client 0.4.0-rc.1 (git+https://github.com/entropyxyz/entropy-core?branch=generalize-tree-state)",
- "entropy-protocol 0.4.0-rc.1 (git+https://github.com/entropyxyz/entropy-core?branch=generalize-tree-state)",
+ "entropy-client",
+ "entropy-protocol",
  "hex",
  "rand 0.8.5",
  "reqwest",
@@ -1956,7 +1956,7 @@ dependencies = [
 [[package]]
 name = "entropy-client"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=generalize-tree-state#9db0fef2c91f039b3dc067011cb598da6d94484a"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=generalize-tree-state#21b84040b344fe1a3e51490a6af9aa8accaf4a98"
 dependencies = [
  "anyhow",
  "axum",
@@ -1964,8 +1964,8 @@ dependencies = [
  "base64 0.22.1",
  "blake2",
  "configfs-tsm",
- "entropy-protocol 0.4.0-rc.1 (git+https://github.com/entropyxyz/entropy-core?branch=generalize-tree-state)",
- "entropy-shared 0.4.0-rc.1 (git+https://github.com/entropyxyz/entropy-core?branch=generalize-tree-state)",
+ "entropy-protocol",
+ "entropy-shared",
  "futures",
  "hex",
  "k256",
@@ -1989,36 +1989,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "entropy-client"
-version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=master#c592552056dc27b8d82a3755d0bd9784cbfe2fe6"
-dependencies = [
- "anyhow",
- "axum",
- "backoff",
- "entropy-shared 0.4.0-rc.1 (git+https://github.com/entropyxyz/entropy-core?branch=master)",
- "futures",
- "num",
- "rand 0.8.5",
- "serde",
- "sha3",
- "sp-core",
- "subxt",
- "subxt-core",
- "tdx-quote",
- "thiserror 2.0.12",
- "tokio",
- "tracing",
-]
-
-[[package]]
 name = "entropy-kvdb"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=master#c592552056dc27b8d82a3755d0bd9784cbfe2fe6"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=generalize-tree-state#21b84040b344fe1a3e51490a6af9aa8accaf4a98"
 dependencies = [
  "bincode",
  "chacha20poly1305 0.9.1",
- "entropy-protocol 0.4.0-rc.1 (git+https://github.com/entropyxyz/entropy-core?branch=master)",
+ "entropy-protocol",
  "hex",
  "rand 0.8.5",
  "rpassword",
@@ -2059,49 +2036,13 @@ dependencies = [
 [[package]]
 name = "entropy-protocol"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=generalize-tree-state#9db0fef2c91f039b3dc067011cb598da6d94484a"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=generalize-tree-state#21b84040b344fe1a3e51490a6af9aa8accaf4a98"
 dependencies = [
  "async-trait",
  "axum",
  "bincode",
  "blake2",
- "entropy-shared 0.4.0-rc.1 (git+https://github.com/entropyxyz/entropy-core?branch=generalize-tree-state)",
- "futures",
- "getrandom 0.2.16",
- "hex",
- "hpke-rs",
- "hpke-rs-crypto",
- "hpke-rs-rust-crypto",
- "k256",
- "manul",
- "num",
- "rand_core 0.6.4",
- "serde",
- "serde-persistent-deserializer",
- "serde_json",
- "snow",
- "sp-core",
- "subxt",
- "synedrion",
- "thiserror 2.0.12",
- "tokio",
- "tokio-tungstenite 0.27.0",
- "tracing",
- "tracing-subscriber",
- "x25519-dalek",
- "zeroize",
-]
-
-[[package]]
-name = "entropy-protocol"
-version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=master#c592552056dc27b8d82a3755d0bd9784cbfe2fe6"
-dependencies = [
- "async-trait",
- "axum",
- "bincode",
- "blake2",
- "entropy-shared 0.4.0-rc.1 (git+https://github.com/entropyxyz/entropy-core?branch=master)",
+ "entropy-shared",
  "futures",
  "getrandom 0.2.16",
  "hex",
@@ -2131,28 +2072,7 @@ dependencies = [
 [[package]]
 name = "entropy-shared"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=generalize-tree-state#9db0fef2c91f039b3dc067011cb598da6d94484a"
-dependencies = [
- "blake2",
- "hex-literal",
- "lazy_static",
- "parity-scale-codec",
- "scale-info",
- "serde",
- "serde_derive",
- "sp-core",
- "sp-runtime",
- "sp-std",
- "strum 0.27.1",
- "strum_macros 0.27.1",
- "subxt",
- "tdx-quote",
-]
-
-[[package]]
-name = "entropy-shared"
-version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=master#c592552056dc27b8d82a3755d0bd9784cbfe2fe6"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=generalize-tree-state#21b84040b344fe1a3e51490a6af9aa8accaf4a98"
 dependencies = [
  "blake2",
  "hex-literal",
@@ -2173,12 +2093,12 @@ dependencies = [
 [[package]]
 name = "entropy-testing-utils"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=master#c592552056dc27b8d82a3755d0bd9784cbfe2fe6"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=generalize-tree-state#21b84040b344fe1a3e51490a6af9aa8accaf4a98"
 dependencies = [
  "axum",
  "entropy-kvdb",
- "entropy-protocol 0.4.0-rc.1 (git+https://github.com/entropyxyz/entropy-core?branch=master)",
- "entropy-shared 0.4.0-rc.1 (git+https://github.com/entropyxyz/entropy-core?branch=master)",
+ "entropy-protocol",
+ "entropy-shared",
  "entropy-tss",
  "hex",
  "hex-literal",
@@ -2202,7 +2122,7 @@ dependencies = [
 [[package]]
 name = "entropy-tss"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=master#c592552056dc27b8d82a3755d0bd9784cbfe2fe6"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=generalize-tree-state#21b84040b344fe1a3e51490a6af9aa8accaf4a98"
 dependencies = [
  "anyhow",
  "axum",
@@ -2214,11 +2134,11 @@ dependencies = [
  "blake2",
  "bytes",
  "clap",
- "entropy-client 0.4.0-rc.1 (git+https://github.com/entropyxyz/entropy-core?branch=master)",
+ "entropy-client",
  "entropy-kvdb",
  "entropy-programs-runtime",
- "entropy-protocol 0.4.0-rc.1 (git+https://github.com/entropyxyz/entropy-core?branch=master)",
- "entropy-shared 0.4.0-rc.1 (git+https://github.com/entropyxyz/entropy-core?branch=master)",
+ "entropy-protocol",
+ "entropy-shared",
  "futures",
  "hex",
  "hkdf",

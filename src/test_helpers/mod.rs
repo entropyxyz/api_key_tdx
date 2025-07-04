@@ -1,11 +1,9 @@
 #![cfg(test)]
 mod test_server;
 
-use crate::{
-    app,
-    app_state::{AppState, Configuration},
-};
+use crate::{app, app_state::AppState};
 use entropy_api_key_service_client::ApiKeyServiceClient;
+use entropy_client::forest::{Configuration, TreeState};
 use rand_core::OsRng;
 use sp_core::{Pair, sr25519};
 use sp_keyring::sr25519::Keyring;
@@ -20,7 +18,7 @@ pub async fn setup_client() -> AppState {
     let (pair, _seed) = sr25519::Pair::generate();
     let x25519_secret = StaticSecret::random_from_rng(OsRng);
 
-    let app_state = AppState::new(configuration, pair, x25519_secret);
+    let app_state = AppState::new(TreeState::new(configuration, pair, x25519_secret));
     let app = app(app_state.clone()).into_make_service();
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3001")
@@ -40,7 +38,7 @@ pub async fn setup_client() -> AppState {
 pub fn make_test_client(app_state: &AppState, keyring: &Keyring) -> ApiKeyServiceClient {
     ApiKeyServiceClient::new(
         "http://127.0.0.1:3001".to_string(),
-        app_state.x25519_public_key(),
+        app_state.tree_state.x25519_public_key(),
         keyring.pair(),
     )
 }

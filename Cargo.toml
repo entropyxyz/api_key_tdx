@@ -36,9 +36,9 @@ configfs-tsm     ={ version="0.0.1", optional=true }
 hex = "0.4.3"
 
 # Entropy crates
-entropy-protocol = { branch="master", git="https://github.com/entropyxyz/entropy-core", features=["server"] }
-entropy-client = { branch="master", git="https://github.com/entropyxyz/entropy-core", features=["server"] }
-entropy-shared = { branch="master", git="https://github.com/entropyxyz/entropy-core" }
+entropy-protocol = { branch="generalize-tree-state", git="https://github.com/entropyxyz/entropy-core", features=["server"] }
+entropy-client = { branch="generalize-tree-state", git="https://github.com/entropyxyz/entropy-core", features=["server"] }
+entropy-shared = { branch="generalize-tree-state", git="https://github.com/entropyxyz/entropy-core" }
 entropy-api-key-service-shared = { version="0.0.1", path="./shared" }
 
 [dev-dependencies]

@@ -13,13 +13,13 @@ use crate::{
     node_info::api::{info, version},
 };
 use anyhow::anyhow;
-use app_state::{AppState, Configuration};
+use app_state::AppState;
 use axum::{
     Router,
     routing::{get, post},
 };
 use clap::Parser;
-use entropy_client::forest::declare_to_chain;
+use entropy_client::forest::{Configuration, TreeState, declare_to_chain};
 use rand_core::OsRng;
 use sp_core::{Pair, sr25519};
 use std::{net::SocketAddr, str::FromStr};
@@ -34,14 +34,18 @@ async fn main() -> anyhow::Result<()> {
 
     let (pair, _seed) = sr25519::Pair::generate();
     let x25519_secret = StaticSecret::random_from_rng(OsRng);
-    let app_state = AppState::new(configuration, pair.clone(), x25519_secret);
-    let (api, rpc) = app_state.get_api_rpc().await.expect("No chain connection");
+    let app_state = AppState::new(TreeState::new(configuration, pair.clone(), x25519_secret));
+    let (api, rpc) = app_state
+        .tree_state
+        .get_api_rpc()
+        .await
+        .expect("No chain connection");
 
     let _ = declare_to_chain(
         &api,
         &rpc,
         args.box_url.clone(),
-        app_state.x25519_public_key(),
+        app_state.tree_state.x25519_public_key(),
         &pair,
         None,
     )

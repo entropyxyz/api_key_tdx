@@ -1,8 +1,8 @@
-use crate::{attestation::create_quote, errors::Err, AppState};
-use axum::{extract::State, Json};
-use entropy_shared::X25519PublicKey;
+use crate::{AppState, errors::Err};
+use axum::{Json, extract::State};
+use entropy_client::forest::{ServerPublicKeys, get_node_info};
+use entropy_shared::attestation::QuoteContext;
 use serde::{Deserialize, Serialize};
-use subxt::utils::AccountId32;
 
 /// Version information - the output of the `/version` HTTP endpoint
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
@@ -39,7 +39,7 @@ impl BuildDetails {
     #[cfg(feature = "production")]
     fn new() -> Self {
         BuildDetails::ProductionWithMeasurementValue(
-            match crate::attestation::get_measurement_value() {
+            match entropy_client::attestation::get_measurement_value() {
                 Ok(value) => hex::encode(value),
                 Err(error) => format!("Failed to get measurement value {:?}", error),
             },
@@ -53,30 +53,14 @@ pub async fn version() -> Json<VersionDetails> {
     Json(VersionDetails::new())
 }
 
-/// Public signing and encryption keys associated with a server
-#[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
-pub struct ServerPublicKeys {
-    /// The account ID
-    pub account_id: AccountId32,
-    /// The public encryption key
-    pub x25519_public_key: X25519PublicKey,
-    /// A hex-encoded TDX quote to show that the server is running the desired service
-    pub tdx_quote: String,
-}
-
 /// Returns the server's public keys
 #[tracing::instrument(skip_all)]
 pub async fn info(State(app_state): State<AppState>) -> Result<Json<ServerPublicKeys>, Err> {
-    Ok(Json(ServerPublicKeys {
-        x25519_public_key: app_state.x25519_public_key(),
-        account_id: app_state.subxt_account_id(),
-        tdx_quote: hex::encode(
-            create_quote(
-                [0; 32],
-                app_state.subxt_account_id(),
-                app_state.x25519_public_key(),
-            )
-            .await?,
-        ),
-    }))
+    Ok(get_node_info(
+        None,
+        app_state.x25519_public_key(),
+        app_state.subxt_account_id(),
+        QuoteContext::Validate,
+    )
+    .await?)
 }

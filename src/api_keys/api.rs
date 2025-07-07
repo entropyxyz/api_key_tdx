@@ -1,7 +1,7 @@
 use crate::{
-    app_state::AppState, errors::Err, DeleteApiKeyInfo, DeployApiKeyInfo, SendApiKeyMessage,
+    DeleteApiKeyInfo, DeployApiKeyInfo, SendApiKeyMessage, app_state::AppState, errors::Err,
 };
-use axum::{extract::State, http::StatusCode, Json};
+use axum::{Json, extract::State, http::StatusCode};
 use entropy_api_key_service_shared::API_KEY_PLACEHOLDER;
 use entropy_protocol::sign_and_encrypt::EncryptedSignedMessage;
 use reqwest::header::{HeaderMap, HeaderName, HeaderValue};
@@ -16,7 +16,7 @@ pub async fn deploy_api_key(
     State(app_state): State<AppState>,
     Json(encrypted_msg): Json<EncryptedSignedMessage>,
 ) -> Result<StatusCode, Err> {
-    let signed_message = encrypted_msg.decrypt(&app_state.x25519_secret, &[])?;
+    let signed_message = encrypted_msg.decrypt(&app_state.tree_state.x25519_secret, &[])?;
 
     let user_api_key_info: DeployApiKeyInfo = serde_json::from_slice(&signed_message.message.0)?;
 
@@ -38,7 +38,7 @@ pub async fn delete_secret(
     State(app_state): State<AppState>,
     Json(encrypted_msg): Json<EncryptedSignedMessage>,
 ) -> Result<StatusCode, Err> {
-    let signed_message = encrypted_msg.decrypt(&app_state.x25519_secret, &[])?;
+    let signed_message = encrypted_msg.decrypt(&app_state.tree_state.x25519_secret, &[])?;
 
     let user_api_key_info: DeleteApiKeyInfo = serde_json::from_slice(&signed_message.message.0)?;
     let request_author = SubxtAccountId32(*signed_message.account_id().as_ref());
@@ -60,7 +60,7 @@ pub async fn make_request(
     State(app_state): State<AppState>,
     Json(encrypted_msg): Json<EncryptedSignedMessage>,
 ) -> Result<(StatusCode, String), Err> {
-    let signed_message = encrypted_msg.decrypt(&app_state.x25519_secret, &[])?;
+    let signed_message = encrypted_msg.decrypt(&app_state.tree_state.x25519_secret, &[])?;
 
     let user_make_request_info: SendApiKeyMessage =
         serde_json::from_slice(&signed_message.message.0)?;

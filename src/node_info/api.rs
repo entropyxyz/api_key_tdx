@@ -58,8 +58,8 @@ pub async fn version() -> Json<VersionDetails> {
 pub async fn info(State(app_state): State<AppState>) -> Result<Json<ServerPublicKeys>, Err> {
     Ok(get_node_info(
         None,
-        app_state.x25519_public_key(),
-        app_state.subxt_account_id(),
+        app_state.tree_state.x25519_public_key(),
+        app_state.tree_state.subxt_account_id(),
         QuoteContext::Validate,
     )
     .await?)

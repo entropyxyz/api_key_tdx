@@ -548,9 +548,9 @@ checksum = "7c02d123df017efcdfbd739ef81735b36c5ba83ec3c59c80a9d7ecc718f92e50"
 
 [[package]]
 name = "async-channel"
-version = "2.4.0"
+version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "16c74e56284d2188cabb6ad99603d1ace887a5d7e7b695d01b728155ed9ed427"
+checksum = "924ed96dd52d1b75e9c1a3e6275715fd320f5f9439fb5a4a11fa51f4221158d2"
 dependencies = [
  "concurrent-queue",
  "event-listener-strategy",
@@ -962,9 +962,9 @@ dependencies = [
 
 [[package]]
 name = "blocking"
-version = "1.6.1"
+version = "1.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "703f41c54fc768e63e091340b424302bb1c29ef4aa0c7f10fe849dfb114d29ea"
+checksum = "e83f8d02be6967315521be875afa792a316e28d57b5a2d401897e2a7921b7f21"
 dependencies = [
  "async-channel",
  "async-task",
@@ -1024,9 +1024,9 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.2.28"
+version = "1.2.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4ad45f4f74e4e20eaa392913b7b33a7091c87e59628f4dd27888205ad888843c"
+checksum = "5c1599538de2394445747c8cf7935946e3cc27e9625f889d979bfb2aaf569362"
 dependencies = [
  "jobserver",
  "libc",
@@ -1956,7 +1956,7 @@ dependencies = [
 [[package]]
 name = "entropy-client"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=master#c592552056dc27b8d82a3755d0bd9784cbfe2fe6"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=master#12ea6f87d5a2f6830834fb1b27fdf07d587d0f96"
 dependencies = [
  "anyhow",
  "axum",
@@ -1991,7 +1991,7 @@ dependencies = [
 [[package]]
 name = "entropy-kvdb"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=master#c592552056dc27b8d82a3755d0bd9784cbfe2fe6"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=master#12ea6f87d5a2f6830834fb1b27fdf07d587d0f96"
 dependencies = [
  "bincode",
  "chacha20poly1305 0.9.1",
@@ -2036,7 +2036,7 @@ dependencies = [
 [[package]]
 name = "entropy-protocol"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=master#c592552056dc27b8d82a3755d0bd9784cbfe2fe6"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=master#12ea6f87d5a2f6830834fb1b27fdf07d587d0f96"
 dependencies = [
  "async-trait",
  "axum",
@@ -2072,7 +2072,7 @@ dependencies = [
 [[package]]
 name = "entropy-shared"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=master#c592552056dc27b8d82a3755d0bd9784cbfe2fe6"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=master#12ea6f87d5a2f6830834fb1b27fdf07d587d0f96"
 dependencies = [
  "blake2",
  "hex-literal",
@@ -2093,7 +2093,7 @@ dependencies = [
 [[package]]
 name = "entropy-testing-utils"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=master#c592552056dc27b8d82a3755d0bd9784cbfe2fe6"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=master#12ea6f87d5a2f6830834fb1b27fdf07d587d0f96"
 dependencies = [
  "axum",
  "entropy-kvdb",
@@ -2122,7 +2122,7 @@ dependencies = [
 [[package]]
 name = "entropy-tss"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/entropyxyz/entropy-core?branch=master#c592552056dc27b8d82a3755d0bd9784cbfe2fe6"
+source = "git+https://github.com/entropyxyz/entropy-core?branch=master#12ea6f87d5a2f6830834fb1b27fdf07d587d0f96"
 dependencies = [
  "anyhow",
  "axum",
@@ -6728,9 +6728,9 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "tokio"
-version = "1.46.0"
+version = "1.46.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1140bb80481756a8cbe10541f37433b459c5aa1e727b4c020fbfebdc25bf3ec4"
+checksum = "0cc3a2344dafbe23a245241fe8b09735b521110d30fcefbbd5feb1797ca35d17"
 dependencies = [
  "backtrace",
  "bytes",

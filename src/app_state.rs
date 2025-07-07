@@ -9,7 +9,7 @@ use std::{
 /// Application state struct which is cloned and made available to every axum HTTP route handler function
 #[derive(Clone)]
 pub struct AppState {
-    /// Tree state from entropy-client
+    /// Tree state mandatory items needed for all trees
     pub tree_state: TreeState,
     /// Storage for api keys
     pub api_keys: Arc<RwLock<HashMap<([u8; 32], String), String>>>,

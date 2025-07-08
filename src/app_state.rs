@@ -1,6 +1,5 @@
 use crate::errors::Err;
 use entropy_client::forest::TreeState;
-use serde::Deserialize;
 use std::{
     collections::HashMap,
     sync::{Arc, RwLock},
@@ -60,16 +59,5 @@ impl AppState {
         if self.api_keys.is_poisoned() {
             self.api_keys.clear_poison()
         }
-    }
-}
-
-#[derive(Deserialize, Debug, Clone)]
-pub struct Configuration {
-    pub endpoint: String,
-}
-
-impl Configuration {
-    pub fn new(endpoint: String) -> Configuration {
-        Configuration { endpoint }
     }
 }
